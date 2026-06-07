@@ -35,6 +35,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: 16px;
+    line-height: 1.4;
 }
 
 button {
@@ -43,6 +45,7 @@ button {
     margin: 8px 0;
     border: none;
     border-radius: 10px;
+    font-size: 16px;
 }
 
 .generate { background: #00c853; color: white; }
@@ -65,64 +68,79 @@ button {
 </div>
 
 <script>
-// ---------------- DATA ----------------
-const actions = [
-  { text: "Explore", type: "exploration" },
-  { text: "Discover", type: "exploration" },
-  { text: "Visit", type: "exploration" },
 
-  { text: "Film", type: "content" },
-  { text: "Document", type: "content" },
-  { text: "Review", type: "content" },
+// ===================== DATA (SCALABLE SYSTEM) =====================
 
-  { text: "Interview", type: "social" },
-  { text: "Talk to", type: "social" },
+const actions = {
+  exploration: [
+    "Explore", "Discover", "Visit", "Walk to", "Find", "Navigate to"
+  ],
+  social: [
+    "Talk to", "Interview", "Ask", "Meet", "Approach", "Observe"
+  ],
+  creation: [
+    "Create", "Design", "Build", "Invent", "Plan", "Draft"
+  ]
+};
 
-  { text: "Create", type: "creation" },
-  { text: "Design", type: "creation" }
-];
+const subjects = {
+  exploration: [
+    "a hidden street", "a local park", "a viewpoint", "a landmark",
+    "a canal path", "a bridge", "a quiet road", "a nearby area",
+    "a place you've never noticed", "a random direction walk"
+  ],
 
-const subjects = [
-  { text: "a hidden street", type: "exploration" },
-  { text: "a local park", type: "exploration" },
-  { text: "a café", type: "exploration" },
-  { text: "a landmark", type: "exploration" },
+  social: [
+    "a stranger", "a shop worker", "a café staff member",
+    "someone you’ve never spoken to", "a local resident",
+    "a person with an interesting job"
+  ],
 
-  { text: "a stranger", type: "social" },
-  { text: "a shop worker", type: "social" },
-  { text: "a café worker", type: "social" },
-
-  { text: "a street scene", type: "content" },
-  { text: "a weird object", type: "content" },
-
-  { text: "a business idea", type: "creation" },
-  { text: "a product concept", type: "creation" }
-];
+  creation: [
+    "a small idea", "a quick plan", "a simple concept",
+    "a life improvement idea", "a mini project concept",
+    "a habit you could start today"
+  ]
+};
 
 const constraints = [
-  "within 30 mins",
+  "within 10 minutes",
+  "within 30 minutes",
+  "within 1 hour",
   "walking only",
-  "under £5",
-  "no transport",
-  "use only phone",
-  "must film it"
+  "no transport allowed",
+  "use only your phone",
+  "stay within 1 mile",
+  "go in a random direction",
+  "do it immediately",
+  "before going home"
 ];
 
-const outputs = [
-  "TikTok",
-  "YouTube Short",
-  "photo story",
-  "mini documentary",
-  "journal entry"
-];
+// ===================== CORE ENGINE =====================
 
-// ---------------- RULE ENGINE ----------------
-function getMatchingSubject(actionType) {
-    const filtered = subjects.filter(s => s.type === actionType);
-    return filtered[Math.floor(Math.random() * filtered.length)];
+function pick(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
 }
 
-// ---------------- STATE ----------------
+function getCategory() {
+    return pick(Object.keys(actions));
+}
+
+function generate() {
+
+    const category = getCategory();
+
+    const action = pick(actions[category]);
+    const subject = pick(subjects[category]);
+    const constraint = pick(constraints);
+
+    current = `${action} ${subject} ${constraint}`;
+
+    document.getElementById("challenge").innerText = current;
+}
+
+// ===================== STATE =====================
+
 let current = null;
 
 let streak = localStorage.getItem("streak") || 0;
@@ -131,18 +149,7 @@ let total = localStorage.getItem("total") || 0;
 document.getElementById("streak").innerText = streak;
 document.getElementById("total").innerText = total;
 
-// ---------------- FUNCTIONS ----------------
-function generate() {
-
-    const action = actions[Math.floor(Math.random() * actions.length)];
-    const subject = getMatchingSubject(action.type);
-    const constraint = constraints[Math.floor(Math.random() * constraints.length)];
-    const output = outputs[Math.floor(Math.random() * outputs.length)];
-
-    current = `${action.text} ${subject.text} ${constraint} → create ${output}`;
-
-    document.getElementById("challenge").innerText = current;
-}
+// ===================== COMPLETE =====================
 
 function complete(){
     if(!current) return;
@@ -166,10 +173,12 @@ function complete(){
     document.getElementById("challenge").innerText = "Completed!";
 }
 
-// ---------------- SERVICE WORKER ----------------
+// ===================== SERVICE WORKER =====================
+
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js');
 }
+
 </script>
 
 </body>
