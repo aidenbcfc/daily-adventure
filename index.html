@@ -4,9 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<title>Daily Adventure</title>
-
-<link rel="manifest" href="manifest.json">
+<title>Life RPG</title>
 
 <style>
 body {
@@ -31,12 +29,11 @@ body {
     padding: 20px;
     border-radius: 15px;
     margin: 20px 0;
-    min-height: 120px;
+    min-height: 140px;
     display: flex;
-    align-items: center;
+    flex-direction: column;
     justify-content: center;
-    font-size: 16px;
-    line-height: 1.4;
+    gap: 10px;
 }
 
 button {
@@ -50,89 +47,120 @@ button {
 
 .generate { background: #00c853; color: white; }
 .complete { background: #2979ff; color: white; }
+
+.badge {
+    font-size: 12px;
+    padding: 5px 10px;
+    border-radius: 8px;
+    display: inline-block;
+}
+
+.common { background: #555; }
+.rare { background: #1e88e5; }
+.epic { background: #8e24aa; }
+.legendary { background: #f9a825; color: black; }
 </style>
 </head>
 
 <body>
 
 <div class="container">
-    <h1>Daily Adventure</h1>
+    <h1>Life RPG</h1>
 
-    <div class="card" id="challenge">Press generate</div>
+    <div class="card">
+        <div id="badge"></div>
+        <div id="challenge">Press generate</div>
+    </div>
 
-    <button class="generate" onclick="generate()">Generate</button>
-    <button class="complete" onclick="complete()">Complete</button>
+    <button class="generate" onclick="generate()">Generate Quest</button>
+    <button class="complete" onclick="complete()">Complete Quest</button>
 
+    <p>Level: <span id="level">1</span></p>
+    <p>XP: <span id="xp">0</span></p>
     <p>Streak: <span id="streak">0</span></p>
-    <p>Total: <span id="total">0</span></p>
 </div>
 
 <script>
 
-// ===================== CLEAN MISSION SYSTEM =====================
+// ===================== RPG SYSTEM =====================
 
 const missions = [
-  "Walk to a place nearby you have never properly explored",
-  "Start a short conversation with a shop worker and ask a question",
-  "Take a 10–15 minute walk without checking your phone",
-  "Find a café you’ve never been inside and go in",
-  "Write down 3 ideas to improve your daily routine",
-  "Compliment someone you encounter naturally today",
-  "Sit somewhere new for 10 minutes and observe your surroundings",
-  "Take a different route than usual when going outside",
-  "Ask a stranger for a simple recommendation (food, place, or activity)",
-  "Spend 10 minutes cleaning or organising a small area",
-  "Write a list of things you want to improve in your life",
-  "Go outside and notice 5 things you’ve never paid attention to before",
-  "Walk to a park or public space and just sit for a while",
-  "Talk to someone you usually wouldn’t talk to",
-  "Do something productive you’ve been avoiding for less than 20 minutes",
-  "Find a quiet place and think about your goals for 10 minutes",
-  "Go into a shop you never go into and browse for 5 minutes",
-  "Take 5 photos of interesting things around you",
-  "Spend 10 minutes learning something new on your phone",
-  "Do a small act of kindness for someone today"
+  { text: "Walk to a nearby place you’ve never explored", cat: "exploration", rarity: "common", xp: 10 },
+  { text: "Do a 10 minute walk without checking your phone", cat: "fitness", rarity: "common", xp: 10 },
+  { text: "Write 3 ideas to improve your life", cat: "creativity", rarity: "common", xp: 10 },
+
+  { text: "Start a conversation with a stranger", cat: "social", rarity: "rare", xp: 30 },
+  { text: "Find a café you’ve never been inside", cat: "exploration", rarity: "rare", xp: 30 },
+  { text: "Take 5 photos of interesting things around you", cat: "creativity", rarity: "rare", xp: 30 },
+
+  { text: "Talk to someone new and learn something about them", cat: "social", rarity: "epic", xp: 60 },
+  { text: "Walk for 20 minutes noticing details you usually miss", cat: "exploration", rarity: "epic", xp: 60 },
+  { text: "Do a creative challenge: design a new idea in your head", cat: "creativity", rarity: "epic", xp: 60 },
+
+  { text: "Have a deep conversation with a stranger", cat: "social", rarity: "legendary", xp: 100 },
+  { text: "Spend 30 minutes exploring somewhere completely new", cat: "exploration", rarity: "legendary", xp: 100 }
 ];
-
-// ===================== NON-REPEAT SYSTEM =====================
-
-let usedMissions = JSON.parse(localStorage.getItem("usedMissions")) || [];
-
-function generate() {
-
-    if (usedMissions.length >= missions.length) {
-        usedMissions = [];
-    }
-
-    let available = missions.filter(m => !usedMissions.includes(m));
-
-    let mission = available[Math.floor(Math.random() * available.length)];
-
-    usedMissions.push(mission);
-    localStorage.setItem("usedMissions", JSON.stringify(usedMissions));
-
-    current = mission;
-
-    document.getElementById("challenge").innerText = current;
-}
 
 // ===================== STATE =====================
 
 let current = null;
 
-let streak = localStorage.getItem("streak") || 0;
-let total = localStorage.getItem("total") || 0;
+let xp = parseInt(localStorage.getItem("xp") || "0");
+let level = parseInt(localStorage.getItem("level") || "1");
+let streak = parseInt(localStorage.getItem("streak") || "0");
 
+document.getElementById("xp").innerText = xp;
+document.getElementById("level").innerText = level;
 document.getElementById("streak").innerText = streak;
-document.getElementById("total").innerText = total;
+
+// ===================== HELPERS =====================
+
+function getBadge(rarity){
+    return `<span class="badge ${rarity}">${rarity.toUpperCase()}</span>`;
+}
+
+function checkLevelUp(){
+    let newLevel = Math.floor(xp / 100) + 1;
+
+    if(newLevel !== level){
+        level = newLevel;
+        localStorage.setItem("level", level);
+    }
+
+    document.getElementById("level").innerText = level;
+}
+
+// ===================== GENERATE =====================
+
+let used = JSON.parse(localStorage.getItem("used")) || [];
+
+function generate(){
+
+    if(used.length >= missions.length){
+        used = [];
+    }
+
+    let available = missions.filter(m => !used.includes(m.text));
+
+    let mission = available[Math.floor(Math.random() * available.length)];
+
+    used.push(mission.text);
+    localStorage.setItem("used", JSON.stringify(used));
+
+    current = mission;
+
+    document.getElementById("challenge").innerText = mission.text;
+    document.getElementById("badge").innerHTML = getBadge(mission.rarity);
+}
 
 // ===================== COMPLETE =====================
 
 function complete(){
+
     if(!current) return;
 
-    total++;
-    localStorage.setItem("total", total);
+    xp += current.xp;
+    localStorage.setItem("xp", xp);
 
     let last = localStorage.getItem("last");
     let today = new Date().toDateString();
@@ -143,17 +171,14 @@ function complete(){
         localStorage.setItem("last", today);
     }
 
-    document.getElementById("total").innerText = total;
+    checkLevelUp();
+
+    document.getElementById("xp").innerText = xp;
     document.getElementById("streak").innerText = streak;
 
     current = null;
-    document.getElementById("challenge").innerText = "Completed!";
-}
-
-// ===================== SERVICE WORKER =====================
-
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js');
+    document.getElementById("challenge").innerText = "Quest Completed!";
+    document.getElementById("badge").innerHTML = "";
 }
 
 </script>
