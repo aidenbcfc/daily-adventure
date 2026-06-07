@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Daily Adventure Generator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Infinite Life RPG</title>
 
 <style>
 body {
     margin: 0;
-    font-family: Arial, sans-serif;
+    font-family: Arial;
     background: #0f0f0f;
     color: white;
     display: flex;
@@ -28,11 +28,12 @@ body {
     padding: 20px;
     border-radius: 15px;
     margin: 20px 0;
-    min-height: 120px;
+    min-height: 140px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
+    font-size: 17px;
+    line-height: 1.4;
 }
 
 button {
@@ -52,7 +53,7 @@ button {
 <body>
 
 <div class="container">
-    <h1>Daily Adventure</h1>
+    <h1>Infinite Life RPG</h1>
 
     <div class="card" id="challenge">Press generate</div>
 
@@ -65,93 +66,87 @@ button {
 
 <script>
 
-// ===================== CORE DATA =====================
-
-const actions = [
-    "Explore",
-    "Visit",
-    "Find",
-    "Discover",
-    "Walk to",
-    "Go to",
-    "Look for",
-    "Investigate",
-    "Check out",
-    "Head towards"
-];
-
-const objects = [
-    "a place you’ve never noticed",
-    "a local café",
-    "a quiet street",
-    "a nearby park",
-    "a shop you’ve never entered",
-    "a landmark nearby",
-    "something unusual in your area",
-    "a random interesting spot",
-    "a place with lots of people",
-    "a place with no people"
-];
-
-const contexts = [
-    "near where you are now",
-    "within walking distance",
-    "without using transport",
-    "in your local area",
-    "you normally ignore",
-    "you pass but never enter",
-    "on your usual route"
-];
-
-const twists = [
-    "",
-    "and take note of 3 interesting things",
-    "and try to notice something new",
-    "and take a photo of something unusual",
-    "and focus on details most people miss",
-    "and change your normal route"
-];
-
-const endings = [
-    "",
-    "just for curiosity",
-    "like you’re a tourist",
-    "as if you’ve never been there before",
-    "and reflect afterwards",
-    "and stay observant"
-];
-
-// ===================== HELPERS =====================
-
-function pick(arr){
-    return arr[Math.floor(Math.random() * arr.length)];
-}
-
-// ===================== GENERATOR =====================
-
-function generate(){
-
-    const action = pick(actions);
-    const object = pick(objects);
-    const context = pick(contexts);
-    const twist = pick(twists);
-    const ending = pick(endings);
-
-    let sentence = `${action} ${object} ${context}`;
-
-    if(twist) sentence += ` ${twist}`;
-    if(ending) sentence += ` ${ending}`;
-
-    document.getElementById("challenge").innerText = sentence;
-}
-
-// ===================== COMPLETE =====================
+// ================= STATE =================
 
 let streak = parseInt(localStorage.getItem("streak") || "0");
 let total = parseInt(localStorage.getItem("total") || "0");
 
 document.getElementById("streak").innerText = streak;
 document.getElementById("total").innerText = total;
+
+// ================= CORE INTENT =================
+
+const intents = [
+    "explore something nearby",
+    "observe your surroundings closely",
+    "notice something you normally ignore",
+    "interact briefly with your environment",
+    "improve a small part of your surroundings",
+    "learn something from a real-world moment",
+    "move with awareness for a short time"
+];
+
+// ================= CONTEXT ENGINE =================
+
+const contexts = [
+    "in a place you pass every day",
+    "within a 5–10 minute walk",
+    "in your immediate surroundings",
+    "in a direction you wouldn’t normally go",
+    "in the most boring area near you (find interest in it)",
+    "somewhere completely ordinary",
+    "wherever you currently are"
+];
+
+// ================= ANGLE SHIFT =================
+
+const angles = [
+    "as if you're seeing it for the first time",
+    "as if you're documenting it for a future version of yourself",
+    "with full attention for 2 minutes",
+    "as a small real-life experiment",
+    "as if it contains something meaningful",
+    "as if it were part of a game world"
+];
+
+// ================= ACTION RULES =================
+
+const actions = [
+    "take mental notes",
+    "find 3 details you’ve never noticed",
+    "change one small thing about your route or behaviour",
+    "observe without judgement",
+    "compare two small things nearby",
+    "focus on one object and analyse it closely",
+    "notice patterns in your surroundings"
+];
+
+// ================= GENERATOR =================
+
+function pick(arr){
+    return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function generate(){
+
+    const intent = pick(intentssafe());
+    const context = pick(contexts);
+    const angle = pick(angles);
+    const action = pick(actions);
+
+    const sentence =
+        `Your mission is to ${intent} ${context}, ${action}, ${angle}.`;
+
+    document.getElementById("challenge").innerText = sentence;
+}
+
+// small safety wrapper (prevents repetition bias)
+function intentssafe(){
+    let shuffled = [...intents].sort(() => Math.random() - 0.5);
+    return shuffled;
+}
+
+// ================= COMPLETE =================
 
 function complete(){
 
