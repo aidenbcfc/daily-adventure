@@ -78,34 +78,50 @@ const actions = [
   { text: "Interview", type: "social" },
   { text: "Talk to", type: "social" },
 
-  { text: "Build", type: "creation" },
   { text: "Create", type: "creation" },
   { text: "Design", type: "creation" }
 ];
+
 const subjects = [
   { text: "a hidden street", type: "exploration" },
   { text: "a local park", type: "exploration" },
-  { text: "a random landmark", type: "exploration" },
+  { text: "a café", type: "exploration" },
+  { text: "a landmark", type: "exploration" },
 
   { text: "a stranger", type: "social" },
-  { text: "a shop owner", type: "social" },
+  { text: "a shop worker", type: "social" },
   { text: "a café worker", type: "social" },
 
-  { text: "a café", type: "exploration" },
-  { text: "a museum", type: "exploration" },
+  { text: "a street scene", type: "content" },
+  { text: "a weird object", type: "content" },
 
   { text: "a business idea", type: "creation" },
-  { text: "a product concept", type: "creation" },
-
-  { text: "a weird object", type: "content" },
-  { text: "a street scene", type: "content" }
+  { text: "a product concept", type: "creation" }
 ];
-const constraints = ["within 30 mins","walking only","under £5","no transport","use only phone","must film it"];
-const outputs = ["TikTok","YouTube Short","photo story","mini documentary","journal entry"];
+
+const constraints = [
+  "within 30 mins",
+  "walking only",
+  "under £5",
+  "no transport",
+  "use only phone",
+  "must film it"
+];
+
+const outputs = [
+  "TikTok",
+  "YouTube Short",
+  "photo story",
+  "mini documentary",
+  "journal entry"
+];
+
+// ---------------- RULE ENGINE ----------------
 function getMatchingSubject(actionType) {
     const filtered = subjects.filter(s => s.type === actionType);
     return filtered[Math.floor(Math.random() * filtered.length)];
 }
+
 // ---------------- STATE ----------------
 let current = null;
 
@@ -116,21 +132,16 @@ document.getElementById("streak").innerText = streak;
 document.getElementById("total").innerText = total;
 
 // ---------------- FUNCTIONS ----------------
-function r(arr){ return arr[Math.floor(Math.random()*arr.length)] }
-
 function generate() {
 
     const action = actions[Math.floor(Math.random() * actions.length)];
-
     const subject = getMatchingSubject(action.type);
-
     const constraint = constraints[Math.floor(Math.random() * constraints.length)];
     const output = outputs[Math.floor(Math.random() * outputs.length)];
 
     current = `${action.text} ${subject.text} ${constraint} → create ${output}`;
 
     document.getElementById("challenge").innerText = current;
-}
 }
 
 function complete(){
