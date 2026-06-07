@@ -34,8 +34,6 @@ body {
     flex-direction: column;
     justify-content: center;
     gap: 10px;
-    font-size: 16px;
-    line-height: 1.4;
 }
 
 button {
@@ -55,7 +53,6 @@ button {
     padding: 4px 10px;
     border-radius: 8px;
     display: inline-block;
-    margin: auto;
 }
 
 .common { background: #555; }
@@ -85,57 +82,6 @@ button {
 
 <script>
 
-// ===================== CORE BUILDING BLOCKS =====================
-
-const actions = {
-  exploration: ["Go to", "Walk to", "Find", "Explore", "Visit"],
-  social: ["Talk to", "Ask", "Approach", "Start a conversation with"],
-  creativity: ["Think about", "Write down", "Create", "Design"],
-  fitness: ["Walk for", "Move towards", "Explore on foot", "Go to"]
-};
-
-const targets = {
-  exploration: [
-    "a place nearby you’ve never properly explored",
-    "a café you’ve never been inside",
-    "a quiet street you usually ignore",
-    "a local park",
-    "a landmark you pass but never stop at"
-  ],
-
-  social: [
-    "a stranger and ask a simple question about their day",
-    "a shop worker and ask for a recommendation",
-    "someone new and learn something interesting about them",
-    "a person you’ve never spoken to before"
-  ],
-
-  creativity: [
-    "a problem in your life and list 3 solutions",
-    "a simple idea that could improve your routine",
-    "a small project you could start this week",
-    "a habit that would improve your life"
-  ],
-
-  fitness: [
-    "for 10–20 minutes without distractions",
-    "to a place you normally wouldn’t walk to",
-    "and notice 5 things you usually miss",
-    "at a steady pace while observing your surroundings"
-  ]
-};
-
-// ===================== RARITY SYSTEM =====================
-
-function getRarity(){
-    const roll = Math.random();
-
-    if(roll < 0.60) return {name:"common", xp:10};
-    if(roll < 0.85) return {name:"rare", xp:25};
-    if(roll < 0.97) return {name:"epic", xp:60};
-    return {name:"legendary", xp:120};
-}
-
 // ===================== STATE =====================
 
 let current = null;
@@ -154,37 +100,95 @@ function pick(arr){
     return arr[Math.floor(Math.random() * arr.length)];
 }
 
-function getCategory(){
-    return pick(Object.keys(actions));
+// ===================== RARITY =====================
+
+function getRarity(){
+    const r = Math.random();
+    if(r < 0.60) return {name:"common", xp:10};
+    if(r < 0.85) return {name:"rare", xp:25};
+    if(r < 0.97) return {name:"epic", xp:60};
+    return {name:"legendary", xp:120};
 }
 
-// ===================== GENERATE (INFINITE SYSTEM) =====================
+// ===================== TEMPLATES (FIX FOR ALL BUGS) =====================
+
+const explorationPlaces = [
+    "a nearby street you usually ignore",
+    "a local park",
+    "a café you’ve never been inside",
+    "a place within walking distance you’ve never explored",
+    "a quiet area you normally walk past"
+];
+
+const socialTargets = [
+    "a stranger",
+    "a shop worker",
+    "someone you’ve never spoken to before",
+    "a café staff member"
+];
+
+const creativeTargets = [
+    "3 problems in your life and possible solutions",
+    "a simple idea that could improve your routine",
+    "a small project you could start this week",
+    "a habit that would improve your daily life"
+];
+
+const fitnessTargets = [
+    "for a 10–15 minute walk without distractions",
+    "while noticing 5 things you usually miss",
+    "at a steady pace without checking your phone",
+    "for a short walk focusing on your surroundings"
+];
+
+// ===================== CATEGORY BUILDER =====================
+
+function generateSentence(category){
+
+    if(category === "exploration"){
+        return "Go to " + pick(explorationPlaces);
+    }
+
+    if(category === "social"){
+        return "Start a conversation with " + pick(socialTargets);
+    }
+
+    if(category === "creativity"){
+        return "Write down " + pick(creativeTargets);
+    }
+
+    if(category === "fitness"){
+        return "Go for a walk " + pick(fitnessTargets);
+    }
+}
+
+// ===================== GENERATE =====================
 
 function generate(){
 
-    const category = getCategory();
+    const categories = ["exploration","social","creativity","fitness"];
+    const category = pick(categories);
 
-    const action = pick(actions[category]);
-    const target = pick(targets[category]);
     const rarity = getRarity();
 
     current = {
-        text: `${action} ${target}`,
-        rarity: rarity.name,
-        xp: rarity.xp
+        text: generateSentence(category),
+        xp: rarity.xp,
+        rarity: rarity.name
     };
 
     document.getElementById("challenge").innerText = current.text;
+
     document.getElementById("badge").innerHTML =
-        `<span class="badge ${rarity.name}">${rarity.name.toUpperCase()} +${rarity.xp} XP</span>`;
+        `<span class="badge ${rarity.name}">
+            ${rarity.name.toUpperCase()} +${rarity.xp} XP
+        </span>`;
 }
 
-// ===================== LEVEL SYSTEM =====================
+// ===================== LEVEL =====================
 
 function updateLevel(){
-    let newLevel = Math.floor(xp / 100) + 1;
-    level = newLevel;
-
+    level = Math.floor(xp / 100) + 1;
     document.getElementById("level").innerText = level;
 }
 
