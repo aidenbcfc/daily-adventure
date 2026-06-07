@@ -52,7 +52,6 @@ button {
     font-size: 12px;
     padding: 4px 10px;
     border-radius: 8px;
-    display: inline-block;
 }
 
 .common { background: #555; }
@@ -90,17 +89,20 @@ let xp = parseInt(localStorage.getItem("xp") || "0");
 let level = parseInt(localStorage.getItem("level") || "1");
 let streak = parseInt(localStorage.getItem("streak") || "0");
 
+// anti-repeat memory (last 50 missions)
+let history = JSON.parse(localStorage.getItem("history") || "[]");
+
 document.getElementById("xp").innerText = xp;
 document.getElementById("level").innerText = level;
 document.getElementById("streak").innerText = streak;
 
-// ===================== HELPERS =====================
+// ===================== RANDOM HELPERS =====================
 
 function pick(arr){
     return arr[Math.floor(Math.random() * arr.length)];
 }
 
-// ===================== RARITY =====================
+// ===================== RARITY ENGINE =====================
 
 function getRarity(){
     const r = Math.random();
@@ -110,69 +112,95 @@ function getRarity(){
     return {name:"legendary", xp:120};
 }
 
-// ===================== TEMPLATES (FIX FOR ALL BUGS) =====================
+// ===================== BUILDING BLOCKS =====================
 
-const explorationPlaces = [
-    "a nearby street you usually ignore",
-    "a local park",
-    "a café you’ve never been inside",
-    "a place within walking distance you’ve never explored",
-    "a quiet area you normally walk past"
+const verbs = {
+    exploration: ["Go to", "Walk to", "Explore", "Visit", "Head towards"],
+    social: ["Talk to", "Approach", "Start a conversation with", "Ask"],
+    creativity: ["Write about", "Think of", "Create", "Design"],
+    fitness: ["Walk for", "Move through", "Explore while walking through"]
+};
+
+const targets = {
+    exploration: [
+        "a place you usually ignore nearby",
+        "a café you’ve never entered",
+        "a street you’ve never properly walked down",
+        "a quiet area in your local surroundings"
+    ],
+    social: [
+        "a stranger and learn something about them",
+        "a shop worker and ask a question",
+        "someone new you’ve never spoken to"
+    ],
+    creativity: [
+        "3 small improvements to your daily life",
+        "a problem you currently have and 2 solutions",
+        "a simple idea that could make life easier"
+    ],
+    fitness: [
+        "for 10–15 minutes without distractions",
+        "while noticing details you usually ignore",
+        "at a steady pace without checking your phone"
+    ]
+};
+
+// optional “twist modifiers” (adds variation without breaking logic)
+const modifiers = [
+    "",
+    "only if it feels comfortable",
+    "and reflect afterwards",
+    "without rushing",
+    "and take your time observing everything"
 ];
 
-const socialTargets = [
-    "a stranger",
-    "a shop worker",
-    "someone you’ve never spoken to before",
-    "a café staff member"
-];
+// ===================== CORE GENERATOR =====================
 
-const creativeTargets = [
-    "3 problems in your life and possible solutions",
-    "a simple idea that could improve your routine",
-    "a small project you could start this week",
-    "a habit that would improve your daily life"
-];
+function buildMission(){
 
-const fitnessTargets = [
-    "for a 10–15 minute walk without distractions",
-    "while noticing 5 things you usually miss",
-    "at a steady pace without checking your phone",
-    "for a short walk focusing on your surroundings"
-];
+    const category = pick(Object.keys(verbs));
+    const verb = pick(verbs[category]);
+    const target = pick(targets[category]);
+    const mod = pick(modifiers);
 
-// ===================== CATEGORY BUILDER =====================
+    let sentence = `${verb} ${target}`;
 
-function generateSentence(category){
+    if(mod) sentence += ` ${mod}`;
 
-    if(category === "exploration"){
-        return "Go to " + pick(explorationPlaces);
-    }
+    return { text: sentence, category };
+}
 
-    if(category === "social"){
-        return "Start a conversation with " + pick(socialTargets);
-    }
+// ===================== ANTI-REPEAT SYSTEM =====================
 
-    if(category === "creativity"){
-        return "Write down " + pick(creativeTargets);
-    }
-
-    if(category === "fitness"){
-        return "Go for a walk " + pick(fitnessTargets);
-    }
+function isRepeated(mission){
+    return history.includes(mission.text);
 }
 
 // ===================== GENERATE =====================
 
 function generate(){
 
-    const categories = ["exploration","social","creativity","fitness"];
-    const category = pick(categories);
+    let mission;
+
+    // keep trying until unique (prevents repetition)
+    for(let i = 0; i < 20; i++){
+        mission = buildMission();
+        if(!isRepeated(mission)) break;
+    }
+
+    history.push(mission.text);
+
+    // keep memory size controlled
+    if(history.length > 80){
+        history.shift();
+    }
+
+    localStorage.setItem("history", JSON.stringify(history));
 
     const rarity = getRarity();
 
     current = {
-        text: generateSentence(category),
+        text: mission.text,
         xp: rarity.xp,
         rarity: rarity.name
     };
@@ -185,7 +213,7 @@ function generate(){
         </span>`;
 }
 
-// ===================== LEVEL =====================
+// ===================== LEVEL SYSTEM =====================
 
 function updateLevel(){
     level = Math.floor(xp / 100) + 1;
