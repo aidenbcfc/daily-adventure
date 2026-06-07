@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-<title>Infinite Life RPG</title>
+<title>Daily Adventure Generator</title>
 
 <style>
 body {
@@ -29,11 +28,11 @@ body {
     padding: 20px;
     border-radius: 15px;
     margin: 20px 0;
-    min-height: 140px;
+    min-height: 120px;
     display: flex;
-    flex-direction: column;
+    align-items: center;
     justify-content: center;
-    gap: 10px;
+    font-size: 18px;
 }
 
 button {
@@ -47,187 +46,117 @@ button {
 
 .generate { background: #00c853; color: white; }
 .complete { background: #2979ff; color: white; }
-
-.badge {
-    font-size: 12px;
-    padding: 4px 10px;
-    border-radius: 8px;
-}
-
-.common { background: #555; }
-.rare { background: #1e88e5; }
-.epic { background: #8e24aa; }
-.legendary { background: #f9a825; color: black; }
 </style>
 </head>
 
 <body>
 
 <div class="container">
-    <h1>Infinite Life RPG</h1>
+    <h1>Daily Adventure</h1>
 
-    <div class="card">
-        <div id="badge"></div>
-        <div id="challenge">Press generate</div>
-    </div>
+    <div class="card" id="challenge">Press generate</div>
 
-    <button class="generate" onclick="generate()">Generate Quest</button>
-    <button class="complete" onclick="complete()">Complete Quest</button>
+    <button class="generate" onclick="generate()">Generate</button>
+    <button class="complete" onclick="complete()">Complete</button>
 
-    <p>Level: <span id="level">1</span></p>
-    <p>XP: <span id="xp">0</span></p>
     <p>Streak: <span id="streak">0</span></p>
+    <p>Total: <span id="total">0</span></p>
 </div>
 
 <script>
 
-// ===================== STATE =====================
+// ===================== CORE DATA =====================
 
-let current = null;
+const actions = [
+    "Explore",
+    "Visit",
+    "Find",
+    "Discover",
+    "Walk to",
+    "Go to",
+    "Look for",
+    "Investigate",
+    "Check out",
+    "Head towards"
+];
 
-let xp = parseInt(localStorage.getItem("xp") || "0");
-let level = parseInt(localStorage.getItem("level") || "1");
-let streak = parseInt(localStorage.getItem("streak") || "0");
+const objects = [
+    "a place you’ve never noticed",
+    "a local café",
+    "a quiet street",
+    "a nearby park",
+    "a shop you’ve never entered",
+    "a landmark nearby",
+    "something unusual in your area",
+    "a random interesting spot",
+    "a place with lots of people",
+    "a place with no people"
+];
 
-// anti-repeat memory (last 50 missions)
-let history = JSON.parse(localStorage.getItem("history") || "[]");
+const contexts = [
+    "near where you are now",
+    "within walking distance",
+    "without using transport",
+    "in your local area",
+    "you normally ignore",
+    "you pass but never enter",
+    "on your usual route"
+];
 
-document.getElementById("xp").innerText = xp;
-document.getElementById("level").innerText = level;
-document.getElementById("streak").innerText = streak;
+const twists = [
+    "",
+    "and take note of 3 interesting things",
+    "and try to notice something new",
+    "and take a photo of something unusual",
+    "and focus on details most people miss",
+    "and change your normal route"
+];
 
-// ===================== RANDOM HELPERS =====================
+const endings = [
+    "",
+    "just for curiosity",
+    "like you’re a tourist",
+    "as if you’ve never been there before",
+    "and reflect afterwards",
+    "and stay observant"
+];
+
+// ===================== HELPERS =====================
 
 function pick(arr){
     return arr[Math.floor(Math.random() * arr.length)];
 }
 
-// ===================== RARITY ENGINE =====================
-
-function getRarity(){
-    const r = Math.random();
-    if(r < 0.60) return {name:"common", xp:10};
-    if(r < 0.85) return {name:"rare", xp:25};
-    if(r < 0.97) return {name:"epic", xp:60};
-    return {name:"legendary", xp:120};
-}
-
-// ===================== BUILDING BLOCKS =====================
-
-const verbs = {
-    exploration: ["Go to", "Walk to", "Explore", "Visit", "Head towards"],
-    social: ["Talk to", "Approach", "Start a conversation with", "Ask"],
-    creativity: ["Write about", "Think of", "Create", "Design"],
-    fitness: ["Walk for", "Move through", "Explore while walking through"]
-};
-
-const targets = {
-    exploration: [
-        "a place you usually ignore nearby",
-        "a café you’ve never entered",
-        "a street you’ve never properly walked down",
-        "a quiet area in your local surroundings"
-    ],
-    social: [
-        "a stranger and learn something about them",
-        "a shop worker and ask a question",
-        "someone new you’ve never spoken to"
-    ],
-    creativity: [
-        "3 small improvements to your daily life",
-        "a problem you currently have and 2 solutions",
-        "a simple idea that could make life easier"
-    ],
-    fitness: [
-        "for 10–15 minutes without distractions",
-        "while noticing details you usually ignore",
-        "at a steady pace without checking your phone"
-    ]
-};
-
-// optional “twist modifiers” (adds variation without breaking logic)
-const modifiers = [
-    "",
-    "only if it feels comfortable",
-    "and reflect afterwards",
-    "without rushing",
-    "and take your time observing everything"
-];
-
-// ===================== CORE GENERATOR =====================
-
-function buildMission(){
-
-    const category = pick(Object.keys(verbs));
-    const verb = pick(verbs[category]);
-    const target = pick(targets[category]);
-    const mod = pick(modifiers);
-
-    let sentence = `${verb} ${target}`;
-
-    if(mod) sentence += ` ${mod}`;
-
-    return { text: sentence, category };
-}
-
-// ===================== ANTI-REPEAT SYSTEM =====================
-
-function isRepeated(mission){
-    return history.includes(mission.text);
-}
-
-// ===================== GENERATE =====================
+// ===================== GENERATOR =====================
 
 function generate(){
 
-    let mission;
+    const action = pick(actions);
+    const object = pick(objects);
+    const context = pick(contexts);
+    const twist = pick(twists);
+    const ending = pick(endings);
 
-    // keep trying until unique (prevents repetition)
-    for(let i = 0; i < 20; i++){
-        mission = buildMission();
-        if(!isRepeated(mission)) break;
-    }
+    let sentence = `${action} ${object} ${context}`;
 
-    history.push(mission.text);
+    if(twist) sentence += ` ${twist}`;
+    if(ending) sentence += ` ${ending}`;
 
-    // keep memory size controlled
-    if(history.length > 80){
-        history.shift();
-    }
-
-    localStorage.setItem("history", JSON.stringify(history));
-
-    const rarity = getRarity();
-
-    current = {
-        text: mission.text,
-        xp: rarity.xp,
-        rarity: rarity.name
-    };
-
-    document.getElementById("challenge").innerText = current.text;
-
-    document.getElementById("badge").innerHTML =
-        `<span class="badge ${rarity.name}">
-            ${rarity.name.toUpperCase()} +${rarity.xp} XP
-        </span>`;
-}
-
-// ===================== LEVEL SYSTEM =====================
-
-function updateLevel(){
-    level = Math.floor(xp / 100) + 1;
-    document.getElementById("level").innerText = level;
+    document.getElementById("challenge").innerText = sentence;
 }
 
 // ===================== COMPLETE =====================
 
+let streak = parseInt(localStorage.getItem("streak") || "0");
+let total = parseInt(localStorage.getItem("total") || "0");
+
+document.getElementById("streak").innerText = streak;
+document.getElementById("total").innerText = total;
+
 function complete(){
 
-    if(!current) return;
-
-    xp += current.xp;
-    localStorage.setItem("xp", xp);
+    total++;
+    localStorage.setItem("total", total);
 
     let last = localStorage.getItem("last");
     let today = new Date().toDateString();
@@ -238,14 +167,8 @@ function complete(){
         localStorage.setItem("last", today);
     }
 
-    updateLevel();
-
-    document.getElementById("xp").innerText = xp;
     document.getElementById("streak").innerText = streak;
-
-    current = null;
-    document.getElementById("challenge").innerText = "Quest Completed!";
-    document.getElementById("badge").innerHTML = "";
+    document.getElementById("total").innerText = total;
 }
 
 </script>
