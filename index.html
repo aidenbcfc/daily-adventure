@@ -1,59 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Infinite Life RPG</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Life RPG</title>
 
 <style>
 body {
-    margin: 0;
+    margin:0;
     font-family: Arial;
-    background: #0f0f0f;
-    color: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
+    background:#0f0f0f;
+    color:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
 }
 
 .container {
-    width: 90%;
-    max-width: 500px;
-    text-align: center;
+    width:90%;
+    max-width:520px;
+    text-align:center;
 }
 
 .card {
-    background: #1c1c1c;
-    padding: 20px;
-    border-radius: 15px;
-    margin: 20px 0;
-    min-height: 140px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 17px;
-    line-height: 1.4;
+    background:#1c1c1c;
+    padding:20px;
+    border-radius:15px;
+    margin:20px 0;
+    min-height:130px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:17px;
+    line-height:1.4;
 }
 
 button {
-    width: 100%;
-    padding: 15px;
-    margin: 8px 0;
-    border: none;
-    border-radius: 10px;
-    font-size: 16px;
+    width:100%;
+    padding:15px;
+    margin:8px 0;
+    border:none;
+    border-radius:10px;
+    font-size:16px;
 }
 
-.generate { background: #00c853; color: white; }
-.complete { background: #2979ff; color: white; }
+.generate { background:#00c853; color:white; }
+.complete { background:#2979ff; color:white; }
 </style>
 </head>
 
 <body>
 
 <div class="container">
-    <h1>Infinite Life RPG</h1>
+    <h1>Life RPG</h1>
 
     <div class="card" id="challenge">Press generate</div>
 
@@ -74,82 +74,294 @@ let total = parseInt(localStorage.getItem("total") || "0");
 document.getElementById("streak").innerText = streak;
 document.getElementById("total").innerText = total;
 
-// ================= CORE INTENT =================
+// ================= TASK SYSTEM (50+ EACH CATEGORY) =================
 
-const intents = [
-    "explore something nearby",
-    "observe your surroundings closely",
-    "notice something you normally ignore",
-    "interact briefly with your environment",
-    "improve a small part of your surroundings",
-    "learn something from a real-world moment",
-    "move with awareness for a short time"
+// SOCIAL (50)
+const social = [
+"ask a shop worker for a recommendation",
+"ask a shop worker what they would buy here",
+"ask someone for directions",
+"ask someone what their day has been like",
+"ask a simple opinion question to a stranger",
+"start a short conversation with someone new",
+"compliment a stranger appropriately",
+"ask someone what they recommend nearby",
+"ask a café worker what is popular here",
+"ask a cashier how their day is going",
+"ask someone for a random local suggestion",
+"ask a worker what the busiest time is",
+"ask someone about a place nearby",
+"ask someone what they like about this area",
+"ask someone what they would change locally",
+"ask a stranger for a food recommendation",
+"ask someone what they are doing today",
+"ask a worker what they enjoy about their job",
+"ask a polite yes/no question to a stranger",
+"ask someone for a hidden gem nearby",
+"ask someone what they avoid in this area",
+"ask someone what they think is underrated locally",
+"ask someone for a quick recommendation",
+"ask someone what makes this place special",
+"ask someone what they usually do here",
+"ask a worker for a suggestion",
+"ask someone for one interesting fact",
+"ask someone what they would visit nearby",
+"ask someone what food they recommend",
+"ask someone what they like most locally",
+"ask someone what they dislike locally",
+"ask a stranger a light general question",
+"ask someone what is worth seeing nearby",
+"ask someone what they do around here",
+"ask someone what they would show a visitor",
+"ask someone for a quick opinion",
+"ask someone what they think is popular here",
+"ask someone what they think is hidden nearby",
+"ask a worker what people usually order",
+"ask someone what they would avoid here",
+"ask someone what they think is unique locally",
+"ask someone for a simple recommendation",
+"ask someone what they notice most around here",
+"ask someone what they find interesting nearby",
+"ask someone what they would change here",
+"ask someone what they think is best locally",
+"ask someone what they would do with a free hour here",
+"ask someone what stands out in this area",
+"ask someone what they recommend seeing first",
+"ask someone what they think is worth your time here"
 ];
 
-// ================= CONTEXT ENGINE =================
-
-const contexts = [
-    "in a place you pass every day",
-    "within a 5–10 minute walk",
-    "in your immediate surroundings",
-    "in a direction you wouldn’t normally go",
-    "in the most boring area near you (find interest in it)",
-    "somewhere completely ordinary",
-    "wherever you currently are"
+// EXPLORATION (50)
+const exploration = [
+"walk down a street you’ve never been down",
+"enter a shop you’ve never entered",
+"take a different route from usual",
+"go somewhere nearby you usually ignore",
+"walk in a random direction for 5 minutes",
+"visit the closest unfamiliar place",
+"explore a side street",
+"walk without a fixed destination",
+"turn down a street you normally skip",
+"go somewhere you pass but never enter",
+"walk to the edge of your comfort area",
+"explore your local area slowly",
+"take a longer route home",
+"walk somewhere new within 10 minutes",
+"find a place you didn’t know existed",
+"walk past your usual route",
+"go explore one block further than usual",
+"walk somewhere without using maps",
+"walk to the nearest unknown street",
+"take a detour on purpose",
+"walk and choose random turns",
+"go somewhere visually unfamiliar",
+"walk until something looks interesting",
+"visit the next street over",
+"go somewhere you’ve never stopped before",
+"walk in a zigzag route",
+"follow curiosity instead of habit",
+"walk and avoid your usual path",
+"walk until you find something new",
+"visit a nearby street you ignore",
+"walk and pick left/right randomly",
+"walk until you find a landmark",
+"walk somewhere unfamiliar nearby",
+"walk through a new shortcut",
+"walk and explore side roads",
+"go to the nearest unexplored area",
+"walk and find a quiet spot",
+"walk to somewhere visually different",
+"walk and avoid familiar places",
+"walk and explore nearby alleys",
+"walk to a nearby open space",
+"walk to somewhere slightly unknown",
+"walk and discover new paths",
+"walk somewhere without planning",
+"walk until something stands out",
+"walk to a new intersection",
+"walk and explore surroundings",
+"walk to a nearby unfamiliar corner",
+"walk and follow instinct",
+"walk to somewhere you’ve ignored before"
 ];
 
-// ================= ANGLE SHIFT =================
-
-const angles = [
-    "as if you're seeing it for the first time",
-    "as if you're documenting it for a future version of yourself",
-    "with full attention for 2 minutes",
-    "as a small real-life experiment",
-    "as if it contains something meaningful",
-    "as if it were part of a game world"
+// OBSERVATION (50)
+const observation = [
+"find 3 things you’ve never noticed before",
+"identify 5 objects around you",
+"find something red, green, and blue nearby",
+"notice 3 different textures around you",
+"find something older than 10 years nearby",
+"find something that looks out of place",
+"observe how people move around you",
+"find something you normally ignore",
+"spot 3 different sounds you hear",
+"find something symmetrical nearby",
+"identify 5 everyday objects",
+"find something visually unusual",
+"notice patterns in your surroundings",
+"find something broken or worn",
+"find something handmade nearby",
+"find something reflective",
+"find something natural in an urban area",
+"find something geometric nearby",
+"find something you’ve never focused on",
+"observe lighting and shadows",
+"find something small you usually miss",
+"identify 3 colours in your surroundings",
+"find something older-looking nearby",
+"find something brand new nearby",
+"find something interesting in plain sight",
+"observe how crowded or empty it is",
+"find something with text on it",
+"find something unusual in design",
+"spot 3 repeated patterns",
+"find something visually complex",
+"find something visually simple",
+"find something noisy nearby",
+"find something silent nearby",
+"observe movement around you",
+"find something that stands out",
+"notice 3 shapes around you",
+"find something partially hidden",
+"find something you’ve walked past before",
+"find something visually balanced",
+"find something visually chaotic",
+"find something overlooked",
+"observe details on one object",
+"find something you can describe in detail",
+"find something people ignore",
+"find something oddly placed",
+"find something visually interesting",
+"find something unusual in colour",
+"find something unique nearby",
+"find something detailed nearby",
+"find something simple but overlooked"
 ];
 
-// ================= ACTION RULES =================
+// THINKING (50)
+const thinking = [
+"think of 3 ways to improve your day",
+"identify one small problem and fix",
+"compare two places you know",
+"think of a better version of your routine",
+"list 5 things you could do differently today",
+"think of a skill you want to improve",
+"identify something wasting your time",
+"think of a better habit you could build",
+"decide what you would change about today",
+"think of something you avoid and why",
+"think of a goal for this week",
+"identify one thing you do automatically",
+"think of a better version of your morning",
+"think of something you could simplify",
+"list 3 things you appreciate right now",
+"think of a challenge you could set yourself",
+"identify something you want to learn",
+"think of a better use of your time",
+"think of something you could remove from your life",
+"compare your past and present habits",
+"think of a small win you can achieve",
+"think of something you want to understand",
+"list 3 improvements to your environment",
+"think of something you’re curious about",
+"identify something you want to stop doing",
+"think of a better version of your workspace",
+"think of something you could organise",
+"think of what makes a good day",
+"think of what drains your energy",
+"think of what gives you energy",
+"think of something you want to explore",
+"think of something you want to avoid",
+"think of something you take for granted",
+"think of a simple improvement idea",
+"think of a habit that helps you",
+"think of a habit that harms you",
+"think of something you could test today",
+"think of something you want clarity on",
+"think of a decision you’re delaying",
+"think of something you want to start",
+"think of something you want to stop",
+"think of something you want to continue",
+"think of something worth your attention",
+"think of something you could improve instantly",
+"think of something you’ve learned recently",
+"think of something you should prioritise",
+"think of something you could simplify",
+"think of something you should notice more",
+"think of something you want to change",
+"think of something you want to understand better"
+];
 
-const actions = [
-    "take mental notes",
-    "find 3 details you’ve never noticed",
-    "change one small thing about your route or behaviour",
-    "observe without judgement",
-    "compare two small things nearby",
-    "focus on one object and analyse it closely",
-    "notice patterns in your surroundings"
+// ACTION (50)
+const action = [
+"tidy a small area",
+"take 3 photos nearby",
+"write one useful idea",
+"organise one small thing",
+"fix something slightly messy",
+"improve one small part of your space",
+"move one object to a better place",
+"clean one small surface",
+"start a tiny project idea",
+"sketch something simple nearby",
+"write down a thought",
+"delete something unnecessary",
+"rearrange something small",
+"improve your surroundings slightly",
+"create a small list of ideas",
+"put something in order",
+"take a photo of something interesting",
+"write a short observation",
+"organise your immediate space",
+"start something you’ve been delaying",
+"complete a 5-minute task",
+"make something more efficient",
+"declutter one small area",
+"adjust something around you",
+"improve one tiny detail nearby",
+"record one useful thought",
+"fix something visually",
+"add structure to something small",
+"clear one small space",
+"make one small improvement",
+"capture something visually interesting",
+"do a quick reset of your space",
+"improve your immediate environment",
+"sort one small thing",
+"focus on one simple task",
+"create a micro plan",
+"update something small",
+"make something more usable",
+"complete a small unfinished task",
+"enhance something nearby",
+"do one productive action",
+"improve one detail",
+"organise one drawer or section",
+"take action on one idea",
+"complete one quick improvement",
+"remove clutter from one spot",
+"make something cleaner",
+"refine one small area",
+"do one simple useful task"
 ];
 
 // ================= GENERATOR =================
 
 function pick(arr){
-    return arr[Math.floor(Math.random() * arr.length)];
+    return arr[Math.floor(Math.random()*arr.length)];
 }
 
 function generate(){
 
-    const intent = pick(intentssafe());
-    const context = pick(contexts);
-    const angle = pick(angles);
-    const action = pick(actions);
+    const pools = [social, exploration, observation, thinking, action];
+    const task = pick(pick(pools));
 
-    const sentence =
-        `Your mission is to ${intent} ${context}, ${action}, ${angle}.`;
-
-    document.getElementById("challenge").innerText = sentence;
-}
-
-// small safety wrapper (prevents repetition bias)
-function intentssafe(){
-    let shuffled = [...intents].sort(() => Math.random() - 0.5);
-    return shuffled;
+    document.getElementById("challenge").innerText = task;
 }
 
 // ================= COMPLETE =================
 
 function complete(){
-
     total++;
     localStorage.setItem("total", total);
 
