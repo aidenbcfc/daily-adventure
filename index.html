@@ -69,65 +69,49 @@ button {
 
 <script>
 
-// ===================== DATA =====================
+// ===================== CLEAN MISSION SYSTEM =====================
 
-const actions = {
-  exploration: [
-    "Go to", "Walk to", "Find", "Explore", "Head towards", "Visit"
-  ],
-  social: [
-    "Talk to", "Approach", "Ask", "Start a conversation with", "Compliment"
-  ],
-  creation: [
-    "Think about", "Write down", "Create", "Design", "Come up with"
-  ]
-};
+const missions = [
+  "Walk to a place nearby you have never properly explored",
+  "Start a short conversation with a shop worker and ask a question",
+  "Take a 10–15 minute walk without checking your phone",
+  "Find a café you’ve never been inside and go in",
+  "Write down 3 ideas to improve your daily routine",
+  "Compliment someone you encounter naturally today",
+  "Sit somewhere new for 10 minutes and observe your surroundings",
+  "Take a different route than usual when going outside",
+  "Ask a stranger for a simple recommendation (food, place, or activity)",
+  "Spend 10 minutes cleaning or organising a small area",
+  "Write a list of things you want to improve in your life",
+  "Go outside and notice 5 things you’ve never paid attention to before",
+  "Walk to a park or public space and just sit for a while",
+  "Talk to someone you usually wouldn’t talk to",
+  "Do something productive you’ve been avoiding for less than 20 minutes",
+  "Find a quiet place and think about your goals for 10 minutes",
+  "Go into a shop you never go into and browse for 5 minutes",
+  "Take 5 photos of interesting things around you",
+  "Spend 10 minutes learning something new on your phone",
+  "Do a small act of kindness for someone today"
+];
 
-const subjects = {
-  exploration: [
-    "a street you have never walked down",
-    "a place nearby you usually ignore",
-    "a café you have never been inside",
-    "a random direction from where you are now",
-    "a local park you rarely visit",
-    "a landmark you pass but never stop at"
-  ],
+// ===================== NON-REPEAT SYSTEM =====================
 
-  social: [
-    "a stranger and ask them a simple question about their day",
-    "a shop worker and ask for their recommendation",
-    "someone nearby and give them a genuine compliment",
-    "a person you’ve never spoken to before",
-    "someone working in a café or shop"
-  ],
-
-  creation: [
-    "a problem in your daily life and 3 ways to fix it",
-    "a simple idea that could improve your routine",
-    "a small project you could start this week",
-    "a habit that would improve your life",
-    "a way to make your day easier or more interesting"
-  ]
-};
-
-// ===================== CORE ENGINE =====================
-
-function pick(arr) {
-    return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function getCategory() {
-    return pick(Object.keys(actions));
-}
+let usedMissions = JSON.parse(localStorage.getItem("usedMissions")) || [];
 
 function generate() {
 
-    const category = getCategory();
+    if (usedMissions.length >= missions.length) {
+        usedMissions = [];
+    }
 
-    const action = pick(actions[category]);
-    const subject = pick(subjects[category]);
+    let available = missions.filter(m => !usedMissions.includes(m));
 
-    current = `${action} ${subject}`;
+    let mission = available[Math.floor(Math.random() * available.length)];
+
+    usedMissions.push(mission);
+    localStorage.setItem("usedMissions", JSON.stringify(usedMissions));
+
+    current = mission;
 
     document.getElementById("challenge").innerText = current;
 }
