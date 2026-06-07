@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<title>Life RPG</title>
+<title>Infinite Life RPG</title>
 
 <style>
 body {
@@ -34,6 +34,8 @@ body {
     flex-direction: column;
     justify-content: center;
     gap: 10px;
+    font-size: 16px;
+    line-height: 1.4;
 }
 
 button {
@@ -48,7 +50,6 @@ button {
 .generate { background: #00c853; color: white; }
 .complete { background: #2979ff; color: white; }
 
-/* RARITY */
 .badge {
     font-size: 12px;
     padding: 4px 10px;
@@ -61,62 +62,13 @@ button {
 .rare { background: #1e88e5; }
 .epic { background: #8e24aa; }
 .legendary { background: #f9a825; color: black; }
-
-/* XP BAR */
-.xp-bar {
-    width: 100%;
-    height: 12px;
-    background: #333;
-    border-radius: 10px;
-    overflow: hidden;
-    margin-top: 10px;
-}
-
-.xp-fill {
-    height: 100%;
-    background: #00c853;
-    width: 0%;
-}
-
-/* USER SCREEN */
-#setup {
-    position: fixed;
-    inset: 0;
-    background: #0f0f0f;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-}
-
-#setup input {
-    padding: 12px;
-    width: 80%;
-    border-radius: 10px;
-    border: none;
-    margin-top: 10px;
-}
-
-#setup button {
-    width: 80%;
-    margin-top: 10px;
-}
 </style>
 </head>
 
 <body>
 
-<!-- ================= USER SETUP ================= -->
-<div id="setup">
-    <h2>Enter Your Name</h2>
-    <input id="usernameInput" placeholder="Your name..." />
-    <button onclick="startGame()">Start Adventure</button>
-</div>
-
-<!-- ================= MAIN APP ================= -->
-<div class="container" id="app" style="display:none;">
-
-    <h1 id="greeting">Life RPG</h1>
+<div class="container">
+    <h1>Infinite Life RPG</h1>
 
     <div class="card">
         <div id="badge"></div>
@@ -126,120 +78,117 @@ button {
     <button class="generate" onclick="generate()">Generate Quest</button>
     <button class="complete" onclick="complete()">Complete Quest</button>
 
-    <div class="xp-bar">
-        <div class="xp-fill" id="xpFill"></div>
-    </div>
-
     <p>Level: <span id="level">1</span></p>
-    <p>XP: <span id="xp">0</span> / 100</p>
+    <p>XP: <span id="xp">0</span></p>
     <p>Streak: <span id="streak">0</span></p>
 </div>
 
 <script>
 
-// ================= DATA =================
+// ===================== CORE BUILDING BLOCKS =====================
 
-const missions = [
-  { text: "Walk to a nearby place you’ve never explored", cat: "exploration", rarity: "common", xp: 10 },
-  { text: "Take a 10 minute walk without checking your phone", cat: "fitness", rarity: "common", xp: 10 },
-  { text: "Write 3 ideas to improve your life", cat: "creativity", rarity: "common", xp: 10 },
+const actions = {
+  exploration: ["Go to", "Walk to", "Find", "Explore", "Visit"],
+  social: ["Talk to", "Ask", "Approach", "Start a conversation with"],
+  creativity: ["Think about", "Write down", "Create", "Design"],
+  fitness: ["Walk for", "Move towards", "Explore on foot", "Go to"]
+};
 
-  { text: "Start a conversation with a stranger", cat: "social", rarity: "rare", xp: 30 },
-  { text: "Find a café you’ve never been inside", cat: "exploration", rarity: "rare", xp: 30 },
+const targets = {
+  exploration: [
+    "a place nearby you’ve never properly explored",
+    "a café you’ve never been inside",
+    "a quiet street you usually ignore",
+    "a local park",
+    "a landmark you pass but never stop at"
+  ],
 
-  { text: "Talk to someone new and learn something about them", cat: "social", rarity: "epic", xp: 60 },
-  { text: "Explore somewhere completely new for 20 minutes", cat: "exploration", rarity: "epic", xp: 60 },
+  social: [
+    "a stranger and ask a simple question about their day",
+    "a shop worker and ask for a recommendation",
+    "someone new and learn something interesting about them",
+    "a person you’ve never spoken to before"
+  ],
 
-  { text: "Have a deep conversation with a stranger", cat: "social", rarity: "legendary", xp: 100 },
-  { text: "Spend 30 minutes exploring a completely unknown area", cat: "exploration", rarity: "legendary", xp: 100 }
-];
+  creativity: [
+    "a problem in your life and list 3 solutions",
+    "a simple idea that could improve your routine",
+    "a small project you could start this week",
+    "a habit that would improve your life"
+  ],
 
-// ================= STATE =================
+  fitness: [
+    "for 10–20 minutes without distractions",
+    "to a place you normally wouldn’t walk to",
+    "and notice 5 things you usually miss",
+    "at a steady pace while observing your surroundings"
+  ]
+};
+
+// ===================== RARITY SYSTEM =====================
+
+function getRarity(){
+    const roll = Math.random();
+
+    if(roll < 0.60) return {name:"common", xp:10};
+    if(roll < 0.85) return {name:"rare", xp:25};
+    if(roll < 0.97) return {name:"epic", xp:60};
+    return {name:"legendary", xp:120};
+}
+
+// ===================== STATE =====================
 
 let current = null;
 
-let username = localStorage.getItem("username");
 let xp = parseInt(localStorage.getItem("xp") || "0");
 let level = parseInt(localStorage.getItem("level") || "1");
 let streak = parseInt(localStorage.getItem("streak") || "0");
 
-let used = JSON.parse(localStorage.getItem("used")) || [];
+document.getElementById("xp").innerText = xp;
+document.getElementById("level").innerText = level;
+document.getElementById("streak").innerText = streak;
 
-// ================= INIT =================
+// ===================== HELPERS =====================
 
-if (username) {
-    document.getElementById("setup").style.display = "none";
-    document.getElementById("app").style.display = "block";
-    document.getElementById("greeting").innerText = `Welcome, ${username}`;
+function pick(arr){
+    return arr[Math.floor(Math.random() * arr.length)];
 }
 
-// ================= USER START =================
-
-function startGame(){
-    const input = document.getElementById("usernameInput").value;
-
-    if(!input) return;
-
-    username = input;
-    localStorage.setItem("username", username);
-
-    document.getElementById("setup").style.display = "none";
-    document.getElementById("app").style.display = "block";
-
-    document.getElementById("greeting").innerText = `Welcome, ${username}`;
+function getCategory(){
+    return pick(Object.keys(actions));
 }
 
-// ================= UI UPDATE =================
-
-function updateUI(){
-
-    document.getElementById("xp").innerText = xp;
-    document.getElementById("level").innerText = level;
-    document.getElementById("streak").innerText = streak;
-
-    let percent = (xp % 100);
-    document.getElementById("xpFill").style.width = percent + "%";
-}
-
-// ================= BADGE =================
-
-function getBadge(rarity){
-    return `<span class="badge ${rarity}">${rarity.toUpperCase()}</span>`;
-}
-
-// ================= LEVEL SYSTEM =================
-
-function checkLevel(){
-    let newLevel = Math.floor(xp / 100) + 1;
-
-    if(newLevel !== level){
-        level = newLevel;
-        localStorage.setItem("level", level);
-    }
-}
-
-// ================= GENERATE =================
+// ===================== GENERATE (INFINITE SYSTEM) =====================
 
 function generate(){
 
-    if(used.length >= missions.length){
-        used = [];
-    }
+    const category = getCategory();
 
-    let available = missions.filter(m => !used.includes(m.text));
+    const action = pick(actions[category]);
+    const target = pick(targets[category]);
+    const rarity = getRarity();
 
-    let mission = available[Math.floor(Math.random() * available.length)];
+    current = {
+        text: `${action} ${target}`,
+        rarity: rarity.name,
+        xp: rarity.xp
+    };
 
-    used.push(mission.text);
-    localStorage.setItem("used", JSON.stringify(used));
-
-    current = mission;
-
-    document.getElementById("challenge").innerText = mission.text;
-    document.getElementById("badge").innerHTML = getBadge(mission.rarity);
+    document.getElementById("challenge").innerText = current.text;
+    document.getElementById("badge").innerHTML =
+        `<span class="badge ${rarity.name}">${rarity.name.toUpperCase()} +${rarity.xp} XP</span>`;
 }
 
-// ================= COMPLETE =================
+// ===================== LEVEL SYSTEM =====================
+
+function updateLevel(){
+    let newLevel = Math.floor(xp / 100) + 1;
+    level = newLevel;
+
+    document.getElementById("level").innerText = level;
+}
+
+// ===================== COMPLETE =====================
 
 function complete(){
 
@@ -257,16 +206,15 @@ function complete(){
         localStorage.setItem("last", today);
     }
 
-    checkLevel();
-    updateUI();
+    updateLevel();
+
+    document.getElementById("xp").innerText = xp;
+    document.getElementById("streak").innerText = streak;
 
     current = null;
     document.getElementById("challenge").innerText = "Quest Completed!";
     document.getElementById("badge").innerHTML = "";
 }
-
-// initial render
-updateUI();
 
 </script>
 
