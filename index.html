@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Real Life Quest System</title>
+<title>Life Quest Generator</title>
 
 <style>
 body {
@@ -19,16 +19,16 @@ body {
 
 .container {
     width:90%;
-    max-width:520px;
+    max-width:550px;
     text-align:center;
 }
 
 .card {
     background:#1c1c1c;
-    padding:20px;
+    padding:22px;
     border-radius:15px;
     margin:20px 0;
-    min-height:130px;
+    min-height:140px;
     display:flex;
     align-items:center;
     justify-content:center;
@@ -53,7 +53,7 @@ button {
 <body>
 
 <div class="container">
-    <h1>Real Life Quests</h1>
+    <h1>Life Quest Generator</h1>
 
     <div class="card" id="challenge">Press generate</div>
 
@@ -74,94 +74,168 @@ let total = parseInt(localStorage.getItem("total") || "0");
 document.getElementById("streak").innerText = streak;
 document.getElementById("total").innerText = total;
 
-// ================= SOCIAL (REJECTION / INTERACTION) =================
+let history = JSON.parse(localStorage.getItem("history") || "[]");
+
+// ================= SOCIAL (50 REAL REJECTION / INTERACTION TASKS) =================
 
 const social = [
-"ask a stranger for directions to somewhere nearby",
-"ask a shop worker what the most popular item is",
-"ask a café worker what they recommend",
-"ask someone for a random recommendation nearby",
-"start a short conversation with a stranger",
-"ask a stranger what time it is (even if you know it)",
+"ask a stranger for directions",
+"ask a shop worker what they recommend",
+"ask a café worker for their favourite item",
+"ask someone for a local hidden gem",
+"ask a stranger what time it is",
+"start a short conversation with someone new",
 "ask a worker how their day is going",
 "ask someone where they would eat nearby",
-"ask a stranger for a simple opinion on something",
-"ask a shop worker what they would choose from the menu",
+"ask a stranger for a food recommendation",
 "compliment a stranger politely",
-"ask someone for a local hidden gem",
-"ask a worker what people usually buy here",
-"ask someone for directions even if you know them",
-"ask a stranger for their favourite place nearby",
-"ask a café worker what drink they recommend",
-"ask someone what they are doing today",
-"ask a stranger what they think of the area",
-"ask a worker what’s busy today",
-"ask someone to recommend one thing nearby",
-"ask a stranger for a simple food suggestion",
+"ask a worker what sells most here",
+"ask someone for a random opinion",
+"ask someone what they like about this area",
+"ask a stranger what they think of the place",
+"ask a shop worker what they would choose",
+"ask someone what they recommend doing nearby",
+"ask a café worker what’s popular",
+"ask someone what they’re doing today",
+"ask a stranger for a simple suggestion",
 "ask a worker what they like about their job",
-"ask someone for a random local tip",
-"ask a stranger for a quick suggestion",
-"ask someone what they’d do nearby",
-"ask a worker what they’d choose",
+"ask someone for a hidden place nearby",
+"ask a stranger for their favourite spot",
 "ask someone what’s worth seeing here",
-"ask a stranger a simple yes/no question",
-"ask someone what they recommend eating",
+"ask a worker what people usually buy",
+"ask someone what they avoid in this area",
+"ask a stranger what they think is good locally",
+"ask someone for a quick recommendation",
 "ask a worker what’s underrated here",
-"ask someone for a place to visit",
-"ask a stranger what they think is good here",
-"ask someone for a simple opinion",
-"ask a worker what’s popular today",
-"ask someone what they like around here"
+"ask someone what they’d do here",
+"ask a stranger what they think is busy here",
+"ask someone what they like most locally",
+"ask a worker for advice on what to try",
+"ask someone for a simple yes/no opinion",
+"ask a stranger what stands out here",
+"ask someone what they would show a visitor",
+"ask a worker what’s best today",
+"ask someone what they think is unique here",
+"ask a stranger what they’d recommend eating",
+"ask someone what they’d avoid here",
+"ask a worker what’s popular right now",
+"ask someone what they notice about this place",
+"ask a stranger for a quick suggestion",
+"ask someone what they think is hidden here",
+"ask a worker what’s worth trying",
+"ask someone what they’d do with an hour here",
+"ask a stranger what they think is interesting",
+"ask someone for one recommendation",
+"ask a worker what’s special here",
+"ask someone what they like about this area"
 ];
 
-// ================= WORLD ACTIONS =================
+// ================= WORLD (50 EXPLORATION TASKS) =================
 
 const world = [
-"walk into a shop you’ve never entered before",
-"take a different route home than usual",
-"walk down a street you normally ignore",
-"go somewhere within 10 minutes you’ve never been",
-"enter the nearest unfamiliar building",
-"walk for 10 minutes without a planned direction",
-"go to a place you pass but never enter",
-"turn down a random street and keep walking",
-"walk to the next street over from usual",
-"go somewhere slightly outside your comfort route",
-"walk until you find something interesting",
-"go explore one block further than normal",
-"visit a nearby area you never stop in",
-"walk without using your usual route",
-"go somewhere you normally avoid",
+"go to a cinema alone",
+"enter a shop you’ve never been inside",
+"walk down a street you usually ignore",
+"take a completely different route home",
+"visit a supermarket and explore every aisle",
+"walk into a café and stay 10 minutes",
+"go to a nearby area you’ve never explored",
+"walk without using your usual path",
+"go to a random nearby street",
+"visit a park and sit somewhere new",
+"walk into a shopping centre you avoid",
+"explore a side street for 10 minutes",
+"go somewhere you pass but never enter",
 "walk in the opposite direction of usual",
-"visit a random nearby street",
-"go somewhere you’ve seen but never entered",
-"walk to the edge of your normal area",
-"go to a nearby place you’ve never properly explored",
-"walk and choose random turns",
-"go somewhere visually unfamiliar nearby",
-"walk to the closest unknown spot",
-"go somewhere slightly uncomfortable but safe",
-"walk until something new appears"
+"visit a bus or train station nearby",
+"walk into a restaurant you’ve never tried",
+"go somewhere slightly unfamiliar nearby",
+"walk and take random turns",
+"enter a small independent shop",
+"go somewhere you’ve never been alone",
+"walk to the edge of your usual area",
+"go into a building you’ve never entered",
+"walk for 10 minutes without a plan",
+"visit a place you normally skip",
+"go somewhere visually unfamiliar",
+"walk into a café you’ve passed before",
+"visit a nearby street market",
+"go to a random local shop",
+"walk somewhere without checking maps",
+"go to a place you’ve avoided",
+"walk into a supermarket alone",
+"visit a different part of town",
+"go somewhere slightly uncomfortable",
+"walk into a cinema and check listings",
+"go explore one block further",
+"visit a nearby busy area",
+"walk to a place you don’t usually go",
+"go somewhere you’ve never stopped at",
+"walk into a random café",
+"visit a transport hub and sit there",
+"go somewhere you usually rush past",
+"walk into a new environment nearby",
+"go to a place you’ve only seen before",
+"walk somewhere unfamiliar for 10 minutes",
+"visit a new street entirely",
+"go somewhere slightly random",
+"walk into a shop just to look around",
+"visit a place you ignore daily",
+"go somewhere new within walking distance"
 ];
 
-// ================= CHALLENGE ACTIONS =================
+// ================= CHALLENGE (50 REJECTION / DISCOMFORT TASKS) =================
 
 const challenge = [
-"stand somewhere slightly busy for 2 minutes",
-"walk into a shop and leave without buying anything",
+"stand in a busy area for 2 minutes",
 "ask a question you normally wouldn’t ask",
-"start a conversation with someone new",
+"walk into a shop and leave without buying anything",
+"start a conversation with a stranger",
+"ask a worker a random question",
+"sit somewhere slightly uncomfortable for 5 minutes",
+"walk into a café and just observe for 5 minutes",
+"ask for something simple you don’t need",
+"approach a counter and ask for advice",
+"stand somewhere new for 5 minutes",
+"talk to a stranger briefly",
 "walk into a place you feel slightly unsure about",
-"do something you normally avoid in public",
-"ask a stranger something simple even if awkward",
-"walk somewhere unfamiliar without checking your phone",
-"spend 5 minutes in a new environment without leaving",
-"approach a counter and ask for a recommendation",
-"sit somewhere new for 5 minutes",
-"walk into a café and just look around for 2 minutes",
-"ask a worker a question you don’t need to ask",
-"stand in a different area than usual",
-"walk somewhere and stop somewhere random"
+"ask a worker what they recommend",
+"sit in a new spot in public",
+"do something slightly outside your comfort zone",
+"ask a stranger for help with something simple",
+"walk somewhere without using your phone",
+"stay in a public place longer than usual",
+"ask someone a simple unexpected question",
+"walk into a shop just to ask one question",
+"approach someone and ask for a recommendation",
+"sit somewhere busy for a few minutes",
+"do a small action you normally avoid",
+"walk into a café and sit without ordering immediately",
+"ask a worker for their opinion",
+"stand somewhere different for a few minutes",
+"walk into a place and stay even if unsure",
+"ask a stranger something basic",
+"sit and observe people for 5 minutes",
+"do something mildly uncomfortable socially",
+"walk into a shop and browse without buying",
+"ask someone for a suggestion",
+"stay in a place you would normally leave quickly",
+"approach someone politely and ask a question",
+"sit somewhere new and stay 5 minutes",
+"do one action you normally avoid in public",
+"walk into a café and sit for a short time",
+"ask a worker something simple",
+"stay in a new environment for 5–10 minutes",
+"do something slightly socially uncomfortable",
+"approach a counter and ask a question",
+"sit in a different area than usual",
+"walk into a place and stay present",
+"ask someone for help with a small thing",
+"stay somewhere unfamiliar briefly",
+"do something you usually hesitate to do",
+"sit somewhere public and remain still for a while",
+"ask a simple question to someone nearby",
+"enter a place and spend a few minutes there"
 ];
 
 // ================= GENERATOR =================
@@ -172,15 +246,28 @@ function pick(arr){
 
 function generate(){
 
-    const pools = [social, world, challenge];
-    const task = pick(pick(pools));
+    let mission;
 
-    document.getElementById("challenge").innerText = task;
+    for(let i=0;i<30;i++){
+        const pool = pick([social, world, challenge]);
+        mission = pick(pool);
+
+        if(!history.includes(mission)) break;
+    }
+
+    history.push(mission);
+
+    if(history.length > 300) history.shift();
+
+    localStorage.setItem("history", JSON.stringify(history));
+
+    document.getElementById("challenge").innerText = mission;
 }
 
 // ================= COMPLETE =================
 
 function complete(){
+
     total++;
     localStorage.setItem("total", total);
 
