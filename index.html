@@ -66,11 +66,46 @@ button {
 
 <script>
 // ---------------- DATA ----------------
-const actions = ["Explore","Discover","Find","Create","Film","Build","Write","Visit"];
-const subjects = ["a hidden street","a café","a stranger","a landmark","a park","a random object"];
+const actions = [
+  { text: "Explore", type: "exploration" },
+  { text: "Discover", type: "exploration" },
+  { text: "Visit", type: "exploration" },
+
+  { text: "Film", type: "content" },
+  { text: "Document", type: "content" },
+  { text: "Review", type: "content" },
+
+  { text: "Interview", type: "social" },
+  { text: "Talk to", type: "social" },
+
+  { text: "Build", type: "creation" },
+  { text: "Create", type: "creation" },
+  { text: "Design", type: "creation" }
+];
+const subjects = [
+  { text: "a hidden street", type: "exploration" },
+  { text: "a local park", type: "exploration" },
+  { text: "a random landmark", type: "exploration" },
+
+  { text: "a stranger", type: "social" },
+  { text: "a shop owner", type: "social" },
+  { text: "a café worker", type: "social" },
+
+  { text: "a café", type: "exploration" },
+  { text: "a museum", type: "exploration" },
+
+  { text: "a business idea", type: "creation" },
+  { text: "a product concept", type: "creation" },
+
+  { text: "a weird object", type: "content" },
+  { text: "a street scene", type: "content" }
+];
 const constraints = ["within 30 mins","walking only","under £5","no transport","use only phone","must film it"];
 const outputs = ["TikTok","YouTube Short","photo story","mini documentary","journal entry"];
-
+function getMatchingSubject(actionType) {
+    const filtered = subjects.filter(s => s.type === actionType);
+    return filtered[Math.floor(Math.random() * filtered.length)];
+}
 // ---------------- STATE ----------------
 let current = null;
 
@@ -83,9 +118,19 @@ document.getElementById("total").innerText = total;
 // ---------------- FUNCTIONS ----------------
 function r(arr){ return arr[Math.floor(Math.random()*arr.length)] }
 
-function generate(){
-    current = `${r(actions)} ${r(subjects)} ${r(constraints)} → turn into ${r(outputs)}`;
+function generate() {
+
+    const action = actions[Math.floor(Math.random() * actions.length)];
+
+    const subject = getMatchingSubject(action.type);
+
+    const constraint = constraints[Math.floor(Math.random() * constraints.length)];
+    const output = outputs[Math.floor(Math.random() * outputs.length)];
+
+    current = `${action.text} ${subject.text} ${constraint} → create ${output}`;
+
     document.getElementById("challenge").innerText = current;
+}
 }
 
 function complete(){
