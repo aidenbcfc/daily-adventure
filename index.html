@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<title>Daily Adventure</title>
+
+<link rel="manifest" href="manifest.json">
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #0f0f0f;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.container {
+    width: 90%;
+    max-width: 500px;
+    text-align: center;
+}
+
+.card {
+    background: #1c1c1c;
+    padding: 20px;
+    border-radius: 15px;
+    margin: 20px 0;
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+button {
+    width: 100%;
+    padding: 15px;
+    margin: 8px 0;
+    border: none;
+    border-radius: 10px;
+}
+
+.generate { background: #00c853; color: white; }
+.complete { background: #2979ff; color: white; }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h1>Daily Adventure</h1>
+
+    <div class="card" id="challenge">Press generate</div>
+
+    <button class="generate" onclick="generate()">Generate</button>
+    <button class="complete" onclick="complete()">Complete</button>
+
+    <p>Streak: <span id="streak">0</span></p>
+    <p>Total: <span id="total">0</span></p>
+</div>
+
+<script>
+// ---------------- DATA ----------------
+const actions = ["Explore","Discover","Find","Create","Film","Build","Write","Visit"];
+const subjects = ["a hidden street","a café","a stranger","a landmark","a park","a random object"];
+const constraints = ["within 30 mins","walking only","under £5","no transport","use only phone","must film it"];
+const outputs = ["TikTok","YouTube Short","photo story","mini documentary","journal entry"];
+
+// ---------------- STATE ----------------
+let current = null;
+
+let streak = localStorage.getItem("streak") || 0;
+let total = localStorage.getItem("total") || 0;
+
+document.getElementById("streak").innerText = streak;
+document.getElementById("total").innerText = total;
+
+// ---------------- FUNCTIONS ----------------
+function r(arr){ return arr[Math.floor(Math.random()*arr.length)] }
+
+function generate(){
+    current = `${r(actions)} ${r(subjects)} ${r(constraints)} → turn into ${r(outputs)}`;
+    document.getElementById("challenge").innerText = current;
+}
+
+function complete(){
+    if(!current) return;
+
+    total++;
+    localStorage.setItem("total", total);
+
+    let last = localStorage.getItem("last");
+    let today = new Date().toDateString();
+
+    if(last !== today){
+        streak++;
+        localStorage.setItem("streak", streak);
+        localStorage.setItem("last", today);
+    }
+
+    document.getElementById("total").innerText = total;
+    document.getElementById("streak").innerText = streak;
+
+    current = null;
+    document.getElementById("challenge").innerText = "Completed!";
+}
+
+// ---------------- SERVICE WORKER ----------------
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+}
+</script>
+
+</body>
+</html>
