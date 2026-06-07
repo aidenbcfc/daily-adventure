@@ -69,52 +69,46 @@ button {
 
 <script>
 
-// ===================== DATA (SCALABLE SYSTEM) =====================
+// ===================== DATA =====================
 
 const actions = {
   exploration: [
-    "Explore", "Discover", "Visit", "Walk to", "Find", "Navigate to"
+    "Go to", "Walk to", "Find", "Explore", "Head towards", "Visit"
   ],
   social: [
-    "Talk to", "Interview", "Ask", "Meet", "Approach", "Observe"
+    "Talk to", "Approach", "Ask", "Start a conversation with", "Compliment"
   ],
   creation: [
-    "Create", "Design", "Build", "Invent", "Plan", "Draft"
+    "Think about", "Write down", "Create", "Design", "Come up with"
   ]
 };
 
 const subjects = {
   exploration: [
-    "a hidden street", "a local park", "a viewpoint", "a landmark",
-    "a canal path", "a bridge", "a quiet road", "a nearby area",
-    "a place you've never noticed", "a random direction walk"
+    "a street you have never walked down",
+    "a place nearby you usually ignore",
+    "a café you have never been inside",
+    "a random direction from where you are now",
+    "a local park you rarely visit",
+    "a landmark you pass but never stop at"
   ],
 
   social: [
-    "a stranger", "a shop worker", "a café staff member",
-    "someone you’ve never spoken to", "a local resident",
-    "a person with an interesting job"
+    "a stranger and ask them a simple question about their day",
+    "a shop worker and ask for their recommendation",
+    "someone nearby and give them a genuine compliment",
+    "a person you’ve never spoken to before",
+    "someone working in a café or shop"
   ],
 
   creation: [
-    "a small idea", "a quick plan", "a simple concept",
-    "a life improvement idea", "a mini project concept",
-    "a habit you could start today"
+    "a problem in your daily life and 3 ways to fix it",
+    "a simple idea that could improve your routine",
+    "a small project you could start this week",
+    "a habit that would improve your life",
+    "a way to make your day easier or more interesting"
   ]
 };
-
-const constraints = [
-  "within 10 minutes",
-  "within 30 minutes",
-  "within 1 hour",
-  "walking only",
-  "no transport allowed",
-  "use only your phone",
-  "stay within 1 mile",
-  "go in a random direction",
-  "do it immediately",
-  "before going home"
-];
 
 // ===================== CORE ENGINE =====================
 
@@ -132,9 +126,8 @@ function generate() {
 
     const action = pick(actions[category]);
     const subject = pick(subjects[category]);
-    const constraint = pick(constraints);
 
-    current = `${action} ${subject} ${constraint}`;
+    current = `${action} ${subject}`;
 
     document.getElementById("challenge").innerText = current;
 }
