@@ -23,6 +23,8 @@ body {
     text-align:center;
 }
 
+/* ================= CARD ================= */
+
 .card {
     background:#1c1c1c;
     padding:22px;
@@ -33,7 +35,26 @@ body {
     font-size:26px;
     line-height:1.5;
     transition:0.3s;
+    position:relative;
 }
+
+/* ================= RARITY LABEL ================= */
+
+#rarityLabel {
+    position:absolute;
+    top:10px;
+    left:12px;
+    font-size:12px;
+    font-weight:bold;
+    letter-spacing:1px;
+    opacity:0.9;
+}
+
+#missionText {
+    margin-top:25px;
+}
+
+/* ================= BUTTONS ================= */
 
 button {
     width:100%;
@@ -106,7 +127,14 @@ p { margin:6px 0; }
 <div class="container">
     <h1>Life Quest Generator</h1>
 
-    <div class="card" id="challenge">Press generate</div>
+    <!-- CARD -->
+    <div class="card" id="challenge">
+
+        <div id="rarityLabel"></div>
+
+        <div id="missionText">Press generate</div>
+
+    </div>
 
     <button class="generate" onclick="generate()">Generate Quest</button>
     <button class="complete" onclick="complete()">Complete Quest</button>
@@ -1057,6 +1085,7 @@ const lifeUpgrade = [
 
 
 
+
 //
 // ================= CATEGORY SYSTEM =================
 //
@@ -1131,14 +1160,16 @@ function generate(){
 
     localStorage.setItem("history", JSON.stringify(history));
 
-    // 🎲 RARITY ASSIGNMENT
+    // 🎲 RARITY
     currentRarity = getRarity();
 
-    // display mission with rarity
-    document.getElementById("challenge").innerText =
-        `[${currentRarity.name}] \n\n${mission}`;
+    // UPDATE UI
+    document.getElementById("rarityLabel").innerText = currentRarity.name.toUpperCase();
+    document.getElementById("rarityLabel").style.color = currentRarity.color;
 
-    // visual glow based on rarity
+    document.getElementById("missionText").innerText = mission;
+
+    // CARD GLOW
     document.getElementById("challenge").style.boxShadow =
         `0 0 20px ${currentRarity.color}`;
 }
@@ -1152,12 +1183,7 @@ function complete(){
     total++;
     localStorage.setItem("total", total);
 
-    // XP now comes from rarity
-    if (currentRarity) {
-        addXP(currentRarity.xp);
-    } else {
-        addXP(10);
-    }
+    addXP(currentRarity ? currentRarity.xp : 10);
 
     let last = localStorage.getItem("last");
     let today = new Date().toDateString();
