@@ -1,87 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Life Quest Generator</title>
-
-<style>
-body {
-    margin:0;
-    font-family: Arial;
-    background:#0f0f0f;
-    color:white;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    min-height:100vh;
-}
-
-.container {
-    width:90%;
-    max-width:600px;
-    text-align:center;
-}
-
-.card {
-    background:#1c1c1c;
-    padding:22px;
-    border-radius:15px;
-    margin:20px 0;
-    min-height:200px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:16px;
-    line-height:1.5;
-    white-space:pre-wrap;
-}
-
-button {
-    width:100%;
-    padding:15px;
-    margin:8px 0;
-    border:none;
-    border-radius:10px;
-    font-size:16px;
-    cursor:pointer;
-}
-
-.generate { background:#00c853; color:white; }
-.complete { background:#2979ff; color:white; }
-
-.small {
-    opacity:0.7;
-    font-size:13px;
-}
-</style>
-</head>
-
-<body>
-
-<div class="container">
-    <h1>Life Quest Generator</h1>
-
-    <div class="card" id="challenge">Press generate</div>
-
-    <button class="generate" onclick="generate()">Generate Quest</button>
-    <button class="complete" onclick="complete()">Complete Quest</button>
-
-    <p>Streak: <span id="streak">0</span></p>
-    <p>Total: <span id="total">0</span></p>
-</div>
-
 <script>
-
-// ================= STATE =================
-
-let streak = parseInt(localStorage.getItem("streak") || "0");
-let total = parseInt(localStorage.getItem("total") || "0");
-let history = JSON.parse(localStorage.getItem("history") || "[]");
-let currentMission = null;
-
-document.getElementById("streak").innerText = streak;
-document.getElementById("total").innerText = total;
 
 // ================= HELPERS =================
 
@@ -89,158 +6,242 @@ function pick(arr){
     return arr[Math.floor(Math.random() * arr.length)];
 }
 
-// ================= BUILDING BLOCKS =================
+function shuffle(arr){
+    return [...arr].sort(() => Math.random() - 0.5);
+}
 
-const objects = [
-"cardboard", "paper", "plastic cups", "books", "chairs", "tape",
-"cushions", "clothes", "kitchen items", "string", "boxes"
+// ================= CORE BUILDING BLOCKS =================
+
+// HARD-LOCKED OBJECT POOLS (no reuse fatigue loops)
+const buildObjects = {
+small: ["paper only", "10 sheets of paper", "cardboard pieces", "A4 paper", "newspaper"],
+medium: ["cardboard boxes", "plastic bottles", "household junk", "tape + paper", "packaging materials"],
+large: ["mixed household items", "furniture rearrangement", "multi-material build kit (everything you find in one room)"]
+};
+
+const buildGoals = [
+"bridge between two chairs (minimum 25cm span)",
+"freestanding tower that supports weight for 60 seconds",
+"functional marble run with at least 3 directional changes",
+"ball launcher that can consistently hit a target",
+"mini chair or seat that can hold a small object",
+"paper structure that resists a fan for 20 seconds"
 ];
 
-const themes = [
-"space", "zombies", "time travel", "survival", "ancient civilisation",
-"future city", "pirates", "secret agent", "sports league", "AI world"
+const fitnessSkills = [
+"wall handstand hold progression",
+"10-minute mobility flow (hips + shoulders)",
+"bodyweight strength circuit (push / pull / legs)",
+"core stability challenge (plank variations)",
+"balance control drill (single-leg stability)",
+"explosive movement practice (jumps / plyometrics)"
 ];
 
-const skills = [
-"handstand", "cartwheel", "L-sit", "crow pose", "basic juggling",
-"basic sign language", "simple magic trick", "memory technique",
-"coin trick", "balance drill"
+const skillLearning = [
+"learn basic juggling pattern (3 ball cascade theory)",
+"learn a magic trick and perform it from memory",
+"learn basic knot tying (5 essential knots)",
+"learn a short memorisation system (chunking / loci)",
+"learn a practical mental maths technique",
+"learn basic coding logic (if/else thinking task)",
+"learn speed reading technique and test improvement"
 ];
 
-const foods = [
-"pasta", "rice bowl", "sandwich", "wrap", "stir fry", "omelette",
-"protein meal", "breakfast bowl", "smoothie bowl"
+const creativeTasks = [
+"design a fictional brand identity (logo + purpose + audience)",
+"create a new sport with rules + scoring system",
+"design a board game concept with win conditions",
+"create a fictional world map with 5 locations",
+"write a 1-page origin story for a character",
+"invent a productivity system for daily life"
 ];
 
-const ingredients = [
-"something spicy", "something you’ve never cooked with",
-"only 5 ingredients", "a protein you rarely eat",
-"a random supermarket item"
+const cookingTasks = [
+"cook a meal using only 5 ingredients max",
+"recreate a fast food item from scratch",
+"create a high-protein meal under £5",
+"cook a dish you’ve never made before using one random ingredient",
+"make a breakfast that combines sweet + savoury",
+"create a ‘fridge clean-out’ meal with no recipe"
 ];
 
-const moneyIdeas = [
-"find 5 items to sell online",
-"create a simple digital product idea",
-"list a micro service you could sell",
-"research a side hustle for 20 minutes",
-"find undervalued items locally"
+const weirdTasks = [
+"spend 30 minutes living like a different decade (no tech rule)",
+"rearrange your room for energy optimisation",
+"invent a new rule that changes how you move for 1 hour",
+"spend 1 hour only speaking in questions (no statements)",
+"build a ‘daily ritual’ and perform it 3 times",
+"create a fake emergency drill and execute it safely"
 ];
 
-// ================= MISSION GENERATORS =================
+const businessTasks = [
+"write a one-page idea for a digital product",
+"identify 3 things you could sell online today",
+"design a £10 micro-service you could offer",
+"map out a simple content-to-income idea",
+"find 1 problem you could solve for people online",
+"create a 7-day plan to test a small money idea"
+];
 
-const generators = [
+// ================= CATEGORY ENGINE =================
 
-() => ({
-title: "DIY BUILD MISSION",
-category: "Creative Build",
+const categories = [
+{
+name: "BUILD",
+weight: 30,
+generator: () => ({
+title: "STRUCTURAL BUILD MISSION",
+category: "BUILD",
 difficulty: "Medium",
-duration: "1–2 Hours",
-mission: `Build a functioning structure using ${pick(objects)}.
+duration: "60–120 mins",
+mission: `Build a ${pick(buildGoals)} using ONLY ${pick(buildObjects.small.concat(buildObjects.medium))}.
 
-It must be:
-- Stable
-- Purposeful (not just random stacking)
-- Tested 3 times`,
-requirements: ["Stable structure", "Functional use", "3 tests"]
-}),
+Constraints:
+- Must be freestanding or functional
+- Must survive a stability test (30–60 seconds)
+- Must serve a purpose (not just stacking objects)`,
+requirements: ["Functional structure", "Stability test", "Defined purpose"]
+})
+},
 
-() => ({
-title: "FITNESS SKILL MISSION",
-category: "Fitness",
+{
+name: "FITNESS",
+weight: 20,
+generator: () => ({
+title: "PHYSICAL PERFORMANCE MISSION",
+category: "FITNESS",
 difficulty: "Medium",
 duration: "30–60 mins",
-mission: `Learn and practise a physical skill:
-
-Choose ONE:
-- ${pick(skills)}
-- Try a harder variation if already known
-
-Rules:
-- 30 minutes minimum practice
-- Must show improvement (even small)`,
-requirements: ["30 min practice", "skill attempt", "progress shown"]
-}),
-
-() => ({
-title: "FOOD CREATION MISSION",
-category: "Cooking",
-difficulty: "Easy–Medium",
-duration: "45–90 mins",
-mission: `Create a meal from scratch.
-
-Rules:
-- Base: ${pick(foods)}
-- Must include: ${pick(ingredients)}
-- Must be something you've never made before
-
-Then rate it out of 10.`,
-requirements: ["Cook from scratch", "New variation", "Taste rating"]
-}),
-
-() => ({
-title: "WEIRD INVENTION MISSION",
-category: "Weird Creativity",
-difficulty: "Easy",
-duration: "30–60 mins",
-mission: `Invent something completely new:
-
-- A new sport
-- OR a new game
-- OR a new rule system for daily life
-
-Theme: ${pick(themes)}
-
-You must:
-- Name it
-- Explain rules
-- Test it once`,
-requirements: ["Create invention", "Name it", "Test once"]
-}),
-
-() => ({
-title: "SKILL LEARNING MISSION",
-category: "Skill Building",
-difficulty: "Medium",
-duration: "45–90 mins",
-mission: `Learn a new practical skill:
-
-Today’s focus:
-- ${pick(skills)}
-
-Rules:
-- 45 minutes focused practice
-- Must be able to demonstrate basic ability`,
-requirements: ["45 min practice", "basic competency"]
-}),
-
-() => ({
-title: "MAKE MONEY THINKING MISSION",
-category: "Business",
-difficulty: "Easy",
-duration: "20–40 mins",
-mission: `Spend time building a money idea:
+mission: `Complete a focused physical development session:
 
 Task:
-- ${pick(moneyIdeas)}
+- ${pick(fitnessSkills)}
 
-Output must be written down clearly:
-- What it is
-- How it would make money
-- First step to start it`,
-requirements: ["Idea created", "Monetisation plan", "Next step"]
+Rules:
+- Minimum 30 minutes
+- Must track progress (time, reps, or attempts)`,
+requirements: ["30 min training", "tracked progress", "skill focus"]
 })
+},
 
+{
+name: "SKILL",
+weight: 20,
+generator: () => ({
+title: "SKILL ACQUISITION MISSION",
+category: "SKILL",
+difficulty: "Medium",
+duration: "45–90 mins",
+mission: `Learn and demonstrate a new skill:
+
+Task:
+- ${pick(skillLearning)}
+
+Outcome:
+- You must be able to demonstrate or explain it after the session`,
+requirements: ["Learning session", "demonstration ability"]
+})
+},
+
+{
+name: "CREATIVE",
+weight: 15,
+generator: () => ({
+title: "CREATIVE DESIGN MISSION",
+category: "CREATIVE",
+difficulty: "Easy–Medium",
+duration: "45–90 mins",
+mission: `Create a complete original concept:
+
+Task:
+- ${pick(creativeTasks)}
+
+Output must include:
+- Name
+- Structure or system
+- Purpose`,
+requirements: ["Original concept", "Defined structure", "Named creation"]
+})
+},
+
+{
+name: "COOKING",
+weight: 10,
+generator: () => ({
+title: "COOKING CREATION MISSION",
+category: "COOK",
+difficulty: "Easy–Medium",
+duration: "45–90 mins",
+mission: `Create a full meal:
+
+Task:
+- ${pick(cookingTasks)}
+
+Rule:
+- Must be something you would NOT normally make`,
+requirements: ["Cooked meal", "New recipe", "Evaluation"]
+})
+},
+
+{
+name: "WEIRD",
+weight: 5,
+generator: () => ({
+title: "CONSTRAINT EXPERIMENT",
+category: "WEIRD",
+difficulty: "Easy",
+duration: "30–60 mins",
+mission: `Run a controlled real-world experiment:
+
+Task:
+- ${pick(weirdTasks)}
+
+Must include:
+- Start and end time
+- Reflection on effect`,
+requirements: ["Time-bound experiment", "Reflection"]
+})
+},
+
+{
+name: "BUSINESS",
+weight: 5,
+generator: () => ({
+title: "IDEA GENERATION MISSION",
+category: "BUSINESS",
+difficulty: "Easy",
+duration: "20–40 mins",
+mission: `Generate a practical money-related idea:
+
+Task:
+- ${pick(businessTasks)}
+
+Must include:
+- Monetisation method
+- First action step`,
+requirements: ["Idea created", "Monetisation path", "Action step"]
+})
+}
 ];
 
-// 90% tangible outcome bias (duplicate weight for build/skill)
-const weightedGenerators = [
-generators[0], generators[0], generators[0], // build
-generators[1], generators[1], // fitness
-generators[2], generators[2], // food
-generators[3], // weird
-generators[4], generators[4], // skill
-generators[5] // money
-];
+// ================= WEIGHTED PICK =================
+
+function weightedPick(){
+    let pool = [];
+
+    categories.forEach(cat => {
+        for(let i = 0; i < cat.weight; i++){
+            pool.push(cat.generator);
+        }
+    });
+
+    return pick(pool);
+}
+
+// ================= STATE =================
+
+let history = JSON.parse(localStorage.getItem("history") || "[]");
+let currentMission = null;
 
 // ================= GENERATE =================
 
@@ -249,18 +250,16 @@ function generate(){
     let mission;
 
     for(let i = 0; i < 30; i++){
-        const gen = pick(weightedGenerators);
+        const gen = weightedPick();
         mission = gen();
 
         if(!history.includes(mission.title + mission.mission)) break;
     }
 
     history.push(mission.title + mission.mission);
-
     if(history.length > 300) history.shift();
 
     localStorage.setItem("history", JSON.stringify(history));
-
     currentMission = mission;
 
     document.getElementById("challenge").innerText =
@@ -277,27 +276,4 @@ Requirements:
 - ${mission.requirements.join("\n- ")}`;
 }
 
-// ================= COMPLETE =================
-
-function complete(){
-
-    total++;
-    localStorage.setItem("total", total);
-
-    let last = localStorage.getItem("last");
-    let today = new Date().toDateString();
-
-    if(last !== today){
-        streak++;
-        localStorage.setItem("streak", streak);
-        localStorage.setItem("last", today);
-    }
-
-    document.getElementById("streak").innerText = streak;
-    document.getElementById("total").innerText = total;
-}
-
 </script>
-
-</body>
-</html>
