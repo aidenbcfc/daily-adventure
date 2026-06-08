@@ -63,19 +63,33 @@ p { margin:6px 0; }
 
     <p>Streak: <span id="streak">0</span></p>
     <p>Total: <span id="total">0</span></p>
+    <p>Level: <span id="level">1</span></p>
+    <p>XP: <span id="xp">0</span> / <span id="xpNeeded">100</span></p>
 </div>
 
 <script>
 
+//
 // ================= STATE =================
+//
 
 let streak = parseInt(localStorage.getItem("streak") || "0");
 let total = parseInt(localStorage.getItem("total") || "0");
 let history = JSON.parse(localStorage.getItem("history") || "[]");
 let recentCategories = JSON.parse(localStorage.getItem("recentCategories") || "[]");
 
+let xp = parseInt(localStorage.getItem("xp") || "0");
+let level = parseInt(localStorage.getItem("level") || "1");
+
 document.getElementById("streak").innerText = streak;
 document.getElementById("total").innerText = total;
+document.getElementById("level").innerText = level;
+document.getElementById("xp").innerText = xp;
+document.getElementById("xpNeeded").innerText = level * 100;
+
+//
+// ================= HELPERS =================
+//
 
 function pick(arr){
     return arr[Math.floor(Math.random() * arr.length)];
@@ -901,19 +915,18 @@ const lifeUpgrade = [
 
 ];
 
+
 // ================= CATEGORY SYSTEM =================
 
 const library = {
-physicalMastery,
-creativeOutput,
-buildMissions,
-skillAcquisition,
-lifeUpgrade,
+    physicalMastery,
+    creativeOutput,
+    buildMissions,
+    skillAcquisition,
+    lifeUpgrade,
 };
 
 const categoryNames = Object.keys(library);
-
-// ================= ANTI-REPEAT (LIGHTWEIGHT BUT EFFECTIVE) =================
 
 function getCategory(){
 
@@ -937,6 +950,32 @@ function getCategory(){
     return chosen;
 }
 
+// ================= XP SYSTEM =================
+
+function addXP(amount) {
+    xp += amount;
+
+    let xpNeeded = level * 100;
+
+    if (xp >= xpNeeded) {
+        xp -= xpNeeded;
+        level++;
+
+        alert("LEVEL UP! You are now level " + level);
+    }
+
+    localStorage.setItem("xp", xp);
+    localStorage.setItem("level", level);
+
+    updateXPUI();
+}
+
+function updateXPUI() {
+    document.getElementById("xp").innerText = xp;
+    document.getElementById("level").innerText = level;
+    document.getElementById("xpNeeded").innerText = level * 100;
+}
+
 // ================= GENERATE =================
 
 function generate(){
@@ -958,7 +997,7 @@ function generate(){
 
     localStorage.setItem("history", JSON.stringify(history));
 
-   document.getElementById("challenge").innerText = mission;
+    document.getElementById("challenge").innerText = mission;
 }
 
 // ================= COMPLETE =================
@@ -966,6 +1005,7 @@ function generate(){
 function complete(){
 
     total++;
+    addXP(25);
     localStorage.setItem("total", total);
 
     let last = localStorage.getItem("last");
@@ -979,6 +1019,8 @@ function complete(){
 
     document.getElementById("streak").innerText = streak;
     document.getElementById("total").innerText = total;
+
+    updateXPUI();
 }
 
 </script>
