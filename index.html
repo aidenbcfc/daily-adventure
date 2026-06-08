@@ -958,10 +958,7 @@ function generate(){
 
     localStorage.setItem("history", JSON.stringify(history));
 
-    document.getElementById("challenge").innerText =
-`CATEGORY: ${category.toUpperCase()}
-
-${mission}`;
+   document.getElementById("challenge").innerText = mission;
 }
 
 // ================= COMPLETE =================
