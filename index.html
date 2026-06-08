@@ -47,6 +47,8 @@ button {
 .generate { background:#00c853; color:white; }
 .complete { background:#2979ff; color:white; }
 
+.reset { background:#ff3b3b; color:white; }
+
 p { margin:6px 0; }
 
 /* ================= XP BAR ================= */
@@ -81,6 +83,8 @@ p { margin:6px 0; }
 
     <button class="generate" onclick="generate()">Generate Quest</button>
     <button class="complete" onclick="complete()">Complete Quest</button>
+
+    <button class="reset" onclick="confirmReset()">Reset Progress</button>
 
     <p>Streak: <span id="streak">0</span></p>
     <p>Total: <span id="total">0</span></p>
@@ -153,6 +157,40 @@ function addXP(amount) {
 
     localStorage.setItem("xp", xp);
     localStorage.setItem("level", level);
+
+    updateXPUI();
+}
+
+//
+// ================= RESET SYSTEM =================
+//
+
+function confirmReset() {
+    const sure = confirm("Are you sure you want to reset all progress?");
+
+    if (sure) {
+        resetGame();
+    }
+}
+
+function resetGame() {
+
+    localStorage.removeItem("xp");
+    localStorage.removeItem("level");
+    localStorage.removeItem("streak");
+    localStorage.removeItem("total");
+    localStorage.removeItem("history");
+    localStorage.removeItem("recentCategories");
+
+    xp = 0;
+    level = 1;
+    streak = 0;
+    total = 0;
+    history = [];
+    recentCategories = [];
+
+    document.getElementById("streak").innerText = streak;
+    document.getElementById("total").innerText = total;
 
     updateXPUI();
 }
