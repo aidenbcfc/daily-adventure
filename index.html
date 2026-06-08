@@ -48,6 +48,27 @@ button {
 .complete { background:#2979ff; color:white; }
 
 p { margin:6px 0; }
+
+/* ================= XP BAR ================= */
+
+.xp-container {
+    margin-top:10px;
+}
+
+.xp-bar {
+    width:100%;
+    height:12px;
+    background:#333;
+    border-radius:10px;
+    overflow:hidden;
+}
+
+.xp-fill {
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,#00c853,#00e5ff);
+    transition:width 0.4s ease;
+}
 </style>
 </head>
 
@@ -63,8 +84,14 @@ p { margin:6px 0; }
 
     <p>Streak: <span id="streak">0</span></p>
     <p>Total: <span id="total">0</span></p>
-    <p>Level: <span id="level">1</span></p>
-    <p>XP: <span id="xp">0</span> / <span id="xpNeeded">100</span></p>
+
+    <!-- XP BAR -->
+    <div class="xp-container">
+        <div class="xp-bar">
+            <div id="xpFill" class="xp-fill"></div>
+        </div>
+        <p>Level: <span id="level">1</span></p>
+    </div>
 </div>
 
 <script>
@@ -81,11 +108,14 @@ let recentCategories = JSON.parse(localStorage.getItem("recentCategories") || "[
 let xp = parseInt(localStorage.getItem("xp") || "0");
 let level = parseInt(localStorage.getItem("level") || "1");
 
+//
+// ================= INIT UI =================
+//
+
 document.getElementById("streak").innerText = streak;
 document.getElementById("total").innerText = total;
-document.getElementById("level").innerText = level;
-document.getElementById("xp").innerText = xp;
-document.getElementById("xpNeeded").innerText = level * 100;
+
+updateXPUI();
 
 //
 // ================= HELPERS =================
@@ -93,6 +123,38 @@ document.getElementById("xpNeeded").innerText = level * 100;
 
 function pick(arr){
     return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function updateXPUI() {
+
+    let xpNeeded = level * 100;
+    let percent = (xp / xpNeeded) * 100;
+
+    document.getElementById("level").innerText = level;
+    document.getElementById("xpFill").style.width = percent + "%";
+}
+
+function addXP(amount) {
+
+    xp += amount;
+
+    let xpNeeded = level * 100;
+
+    if (xp >= xpNeeded) {
+        xp -= xpNeeded;
+        level++;
+
+        document.body.style.boxShadow = "0 0 40px #00e5ff";
+
+        setTimeout(() => {
+            document.body.style.boxShadow = "none";
+        }, 400);
+    }
+
+    localStorage.setItem("xp", xp);
+    localStorage.setItem("level", level);
+
+    updateXPUI();
 }
 
 // ================= FULL MISSION LIBRARY =================
@@ -916,6 +978,7 @@ const lifeUpgrade = [
 ];
 
 
+
 // ================= CATEGORY SYSTEM =================
 
 const library = {
@@ -950,32 +1013,6 @@ function getCategory(){
     return chosen;
 }
 
-// ================= XP SYSTEM =================
-
-function addXP(amount) {
-    xp += amount;
-
-    let xpNeeded = level * 100;
-
-    if (xp >= xpNeeded) {
-        xp -= xpNeeded;
-        level++;
-
-        alert("LEVEL UP! You are now level " + level);
-    }
-
-    localStorage.setItem("xp", xp);
-    localStorage.setItem("level", level);
-
-    updateXPUI();
-}
-
-function updateXPUI() {
-    document.getElementById("xp").innerText = xp;
-    document.getElementById("level").innerText = level;
-    document.getElementById("xpNeeded").innerText = level * 100;
-}
-
 // ================= GENERATE =================
 
 function generate(){
@@ -1005,8 +1042,9 @@ function generate(){
 function complete(){
 
     total++;
-    addXP(25);
     localStorage.setItem("total", total);
+
+    addXP(25);
 
     let last = localStorage.getItem("last");
     let today = new Date().toDateString();
@@ -1019,8 +1057,6 @@ function complete(){
 
     document.getElementById("streak").innerText = streak;
     document.getElementById("total").innerText = total;
-
-    updateXPUI();
 }
 
 </script>
