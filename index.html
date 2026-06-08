@@ -32,6 +32,7 @@ body {
     white-space:pre-wrap;
     font-size:26px;
     line-height:1.5;
+    transition:0.3s;
 }
 
 button {
@@ -71,7 +72,7 @@ p { margin:6px 0; }
     transition:width 0.4s ease;
 }
 
-/* ================= XP POPUP ANIMATION ================= */
+/* ================= XP POPUP ================= */
 
 .xp-popup {
     position: fixed;
@@ -91,9 +92,7 @@ p { margin:6px 0; }
         opacity: 0;
         transform: translate(-50%, -50%) scale(0.8);
     }
-    20% {
-        opacity: 1;
-    }
+    20% { opacity: 1; }
     100% {
         opacity: 0;
         transform: translate(-50%, -120%) scale(1.2);
@@ -111,7 +110,6 @@ p { margin:6px 0; }
 
     <button class="generate" onclick="generate()">Generate Quest</button>
     <button class="complete" onclick="complete()">Complete Quest</button>
-
     <button class="reset" onclick="confirmReset()">Reset Progress</button>
 
     <p>Streak: <span id="streak">0</span></p>
@@ -140,8 +138,10 @@ let recentCategories = JSON.parse(localStorage.getItem("recentCategories") || "[
 let xp = parseInt(localStorage.getItem("xp") || "0");
 let level = parseInt(localStorage.getItem("level") || "1");
 
+let currentRarity = null;
+
 //
-// ================= INIT UI =================
+// ================= INIT =================
 //
 
 document.getElementById("streak").innerText = streak;
@@ -157,15 +157,6 @@ function pick(arr){
     return arr[Math.floor(Math.random() * arr.length)];
 }
 
-function updateXPUI() {
-
-    let xpNeeded = level * 100;
-    let percent = (xp / xpNeeded) * 100;
-
-    document.getElementById("level").innerText = level;
-    document.getElementById("xpFill").style.width = percent + "%";
-}
-
 function showXPAnimation(amount) {
 
     const popup = document.createElement("div");
@@ -174,9 +165,16 @@ function showXPAnimation(amount) {
 
     document.body.appendChild(popup);
 
-    setTimeout(() => {
-        popup.remove();
-    }, 1000);
+    setTimeout(() => popup.remove(), 1000);
+}
+
+function updateXPUI() {
+
+    let xpNeeded = level * 100;
+    let percent = (xp / xpNeeded) * 100;
+
+    document.getElementById("level").innerText = level;
+    document.getElementById("xpFill").style.width = percent + "%";
 }
 
 function addXP(amount) {
@@ -205,15 +203,12 @@ function addXP(amount) {
 }
 
 //
-// ================= RESET SYSTEM =================
+// ================= RESET =================
 //
 
 function confirmReset() {
     const sure = confirm("Are you sure you want to reset all progress?");
-
-    if (sure) {
-        resetGame();
-    }
+    if (sure) resetGame();
 }
 
 function resetGame() {
