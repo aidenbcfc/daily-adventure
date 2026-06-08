@@ -46,7 +46,6 @@ button {
 
 .generate { background:#00c853; color:white; }
 .complete { background:#2979ff; color:white; }
-
 .reset { background:#ff3b3b; color:white; }
 
 p { margin:6px 0; }
@@ -70,6 +69,35 @@ p { margin:6px 0; }
     width:0%;
     background:linear-gradient(90deg,#00c853,#00e5ff);
     transition:width 0.4s ease;
+}
+
+/* ================= XP POPUP ANIMATION ================= */
+
+.xp-popup {
+    position: fixed;
+    left: 50%;
+    top: 45%;
+    transform: translate(-50%, -50%);
+    font-size: 28px;
+    font-weight: bold;
+    color: #00e5ff;
+    pointer-events: none;
+    animation: floatUp 1s ease-out forwards;
+    z-index: 9999;
+}
+
+@keyframes floatUp {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+    }
+    20% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -120%) scale(1.2);
+    }
 }
 </style>
 </head>
@@ -138,7 +166,22 @@ function updateXPUI() {
     document.getElementById("xpFill").style.width = percent + "%";
 }
 
+function showXPAnimation(amount) {
+
+    const popup = document.createElement("div");
+    popup.className = "xp-popup";
+    popup.innerText = `+${amount} XP`;
+
+    document.body.appendChild(popup);
+
+    setTimeout(() => {
+        popup.remove();
+    }, 1000);
+}
+
 function addXP(amount) {
+
+    showXPAnimation(amount);
 
     xp += amount;
 
@@ -1017,7 +1060,10 @@ const lifeUpgrade = [
 
 
 
+
+//
 // ================= CATEGORY SYSTEM =================
+//
 
 const library = {
     physicalMastery,
@@ -1051,7 +1097,9 @@ function getCategory(){
     return chosen;
 }
 
+//
 // ================= GENERATE =================
+//
 
 function generate(){
 
@@ -1075,7 +1123,9 @@ function generate(){
     document.getElementById("challenge").innerText = mission;
 }
 
+//
 // ================= COMPLETE =================
+//
 
 function complete(){
 
@@ -1095,41 +1145,6 @@ function complete(){
 
     document.getElementById("streak").innerText = streak;
     document.getElementById("total").innerText = total;
-}
-
-// ================= RESET SYSTEM =================
-
-function confirmReset() {
-    const sure = confirm("Are you sure you want to reset all XP and progress?");
-
-    if (sure) {
-        resetGame();
-    }
-}
-
-function resetGame() {
-
-    // clear storage
-    localStorage.removeItem("xp");
-    localStorage.removeItem("level");
-    localStorage.removeItem("streak");
-    localStorage.removeItem("total");
-    localStorage.removeItem("history");
-    localStorage.removeItem("recentCategories");
-
-    // reset variables
-    xp = 0;
-    level = 1;
-    streak = 0;
-    total = 0;
-    history = [];
-    recentCategories = [];
-
-    // update UI
-    document.getElementById("streak").innerText = streak;
-    document.getElementById("total").innerText = total;
-
-    updateXPUI();
 }
 
 </script>
