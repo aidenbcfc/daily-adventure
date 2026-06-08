@@ -19,7 +19,7 @@ body {
 
 .container {
     width:90%;
-    max-width:550px;
+    max-width:600px;
     text-align:center;
 }
 
@@ -28,12 +28,13 @@ body {
     padding:22px;
     border-radius:15px;
     margin:20px 0;
-    min-height:140px;
+    min-height:200px;
     display:flex;
     align-items:center;
     justify-content:center;
-    font-size:18px;
-    line-height:1.4;
+    font-size:16px;
+    line-height:1.5;
+    white-space:pre-wrap;
 }
 
 button {
@@ -43,10 +44,16 @@ button {
     border:none;
     border-radius:10px;
     font-size:16px;
+    cursor:pointer;
 }
 
 .generate { background:#00c853; color:white; }
 .complete { background:#2979ff; color:white; }
+
+.small {
+    opacity:0.7;
+    font-size:13px;
+}
 </style>
 </head>
 
@@ -70,198 +77,204 @@ button {
 
 let streak = parseInt(localStorage.getItem("streak") || "0");
 let total = parseInt(localStorage.getItem("total") || "0");
+let history = JSON.parse(localStorage.getItem("history") || "[]");
+let currentMission = null;
 
 document.getElementById("streak").innerText = streak;
 document.getElementById("total").innerText = total;
 
-let history = JSON.parse(localStorage.getItem("history") || "[]");
-
-// ================= SOCIAL (50 REAL REJECTION / INTERACTION TASKS) =================
-
-const social = [
-"ask a stranger for directions",
-"ask a shop worker what they recommend",
-"ask a café worker for their favourite item",
-"ask someone for a local hidden gem",
-"ask a stranger what time it is",
-"start a short conversation with someone new",
-"ask a worker how their day is going",
-"ask someone where they would eat nearby",
-"ask a stranger for a food recommendation",
-"compliment a stranger politely",
-"ask a worker what sells most here",
-"ask someone for a random opinion",
-"ask someone what they like about this area",
-"ask a stranger what they think of the place",
-"ask a shop worker what they would choose",
-"ask someone what they recommend doing nearby",
-"ask a café worker what’s popular",
-"ask someone what they’re doing today",
-"ask a stranger for a simple suggestion",
-"ask a worker what they like about their job",
-"ask someone for a hidden place nearby",
-"ask a stranger for their favourite spot",
-"ask someone what’s worth seeing here",
-"ask a worker what people usually buy",
-"ask someone what they avoid in this area",
-"ask a stranger what they think is good locally",
-"ask someone for a quick recommendation",
-"ask a worker what’s underrated here",
-"ask someone what they’d do here",
-"ask a stranger what they think is busy here",
-"ask someone what they like most locally",
-"ask a worker for advice on what to try",
-"ask someone for a simple yes/no opinion",
-"ask a stranger what stands out here",
-"ask someone what they would show a visitor",
-"ask a worker what’s best today",
-"ask someone what they think is unique here",
-"ask a stranger what they’d recommend eating",
-"ask someone what they’d avoid here",
-"ask a worker what’s popular right now",
-"ask someone what they notice about this place",
-"ask a stranger for a quick suggestion",
-"ask someone what they think is hidden here",
-"ask a worker what’s worth trying",
-"ask someone what they’d do with an hour here",
-"ask a stranger what they think is interesting",
-"ask someone for one recommendation",
-"ask a worker what’s special here",
-"ask someone what they like about this area"
-];
-
-// ================= WORLD (50 EXPLORATION TASKS) =================
-
-const world = [
-"go to a cinema alone",
-"enter a shop you’ve never been inside",
-"walk down a street you usually ignore",
-"take a completely different route home",
-"visit a supermarket and explore every aisle",
-"walk into a café and stay 10 minutes",
-"go to a nearby area you’ve never explored",
-"walk without using your usual path",
-"go to a random nearby street",
-"visit a park and sit somewhere new",
-"walk into a shopping centre you avoid",
-"explore a side street for 10 minutes",
-"go somewhere you pass but never enter",
-"walk in the opposite direction of usual",
-"visit a bus or train station nearby",
-"walk into a restaurant you’ve never tried",
-"go somewhere slightly unfamiliar nearby",
-"walk and take random turns",
-"enter a small independent shop",
-"go somewhere you’ve never been alone",
-"walk to the edge of your usual area",
-"go into a building you’ve never entered",
-"walk for 10 minutes without a plan",
-"visit a place you normally skip",
-"go somewhere visually unfamiliar",
-"walk into a café you’ve passed before",
-"visit a nearby street market",
-"go to a random local shop",
-"walk somewhere without checking maps",
-"go to a place you’ve avoided",
-"walk into a supermarket alone",
-"visit a different part of town",
-"go somewhere slightly uncomfortable",
-"walk into a cinema and check listings",
-"go explore one block further",
-"visit a nearby busy area",
-"walk to a place you don’t usually go",
-"go somewhere you’ve never stopped at",
-"walk into a random café",
-"visit a transport hub and sit there",
-"go somewhere you usually rush past",
-"walk into a new environment nearby",
-"go to a place you’ve only seen before",
-"walk somewhere unfamiliar for 10 minutes",
-"visit a new street entirely",
-"go somewhere slightly random",
-"walk into a shop just to look around",
-"visit a place you ignore daily",
-"go somewhere new within walking distance"
-];
-
-// ================= CHALLENGE (50 REJECTION / DISCOMFORT TASKS) =================
-
-const challenge = [
-"stand in a busy area for 2 minutes",
-"ask a question you normally wouldn’t ask",
-"walk into a shop and leave without buying anything",
-"start a conversation with a stranger",
-"ask a worker a random question",
-"sit somewhere slightly uncomfortable for 5 minutes",
-"walk into a café and just observe for 5 minutes",
-"ask for something simple you don’t need",
-"approach a counter and ask for advice",
-"stand somewhere new for 5 minutes",
-"talk to a stranger briefly",
-"walk into a place you feel slightly unsure about",
-"ask a worker what they recommend",
-"sit in a new spot in public",
-"do something slightly outside your comfort zone",
-"ask a stranger for help with something simple",
-"walk somewhere without using your phone",
-"stay in a public place longer than usual",
-"ask someone a simple unexpected question",
-"walk into a shop just to ask one question",
-"approach someone and ask for a recommendation",
-"sit somewhere busy for a few minutes",
-"do a small action you normally avoid",
-"walk into a café and sit without ordering immediately",
-"ask a worker for their opinion",
-"stand somewhere different for a few minutes",
-"walk into a place and stay even if unsure",
-"ask a stranger something basic",
-"sit and observe people for 5 minutes",
-"do something mildly uncomfortable socially",
-"walk into a shop and browse without buying",
-"ask someone for a suggestion",
-"stay in a place you would normally leave quickly",
-"approach someone politely and ask a question",
-"sit somewhere new and stay 5 minutes",
-"do one action you normally avoid in public",
-"walk into a café and sit for a short time",
-"ask a worker something simple",
-"stay in a new environment for 5–10 minutes",
-"do something slightly socially uncomfortable",
-"approach a counter and ask a question",
-"sit in a different area than usual",
-"walk into a place and stay present",
-"ask someone for help with a small thing",
-"stay somewhere unfamiliar briefly",
-"do something you usually hesitate to do",
-"sit somewhere public and remain still for a while",
-"ask a simple question to someone nearby",
-"enter a place and spend a few minutes there"
-];
-
-// ================= GENERATOR =================
+// ================= HELPERS =================
 
 function pick(arr){
-    return arr[Math.floor(Math.random()*arr.length)];
+    return arr[Math.floor(Math.random() * arr.length)];
 }
+
+// ================= BUILDING BLOCKS =================
+
+const objects = [
+"cardboard", "paper", "plastic cups", "books", "chairs", "tape",
+"cushions", "clothes", "kitchen items", "string", "boxes"
+];
+
+const themes = [
+"space", "zombies", "time travel", "survival", "ancient civilisation",
+"future city", "pirates", "secret agent", "sports league", "AI world"
+];
+
+const skills = [
+"handstand", "cartwheel", "L-sit", "crow pose", "basic juggling",
+"basic sign language", "simple magic trick", "memory technique",
+"coin trick", "balance drill"
+];
+
+const foods = [
+"pasta", "rice bowl", "sandwich", "wrap", "stir fry", "omelette",
+"protein meal", "breakfast bowl", "smoothie bowl"
+];
+
+const ingredients = [
+"something spicy", "something you’ve never cooked with",
+"only 5 ingredients", "a protein you rarely eat",
+"a random supermarket item"
+];
+
+const moneyIdeas = [
+"find 5 items to sell online",
+"create a simple digital product idea",
+"list a micro service you could sell",
+"research a side hustle for 20 minutes",
+"find undervalued items locally"
+];
+
+// ================= MISSION GENERATORS =================
+
+const generators = [
+
+() => ({
+title: "DIY BUILD MISSION",
+category: "Creative Build",
+difficulty: "Medium",
+duration: "1–2 Hours",
+mission: `Build a functioning structure using ${pick(objects)}.
+
+It must be:
+- Stable
+- Purposeful (not just random stacking)
+- Tested 3 times`,
+requirements: ["Stable structure", "Functional use", "3 tests"]
+}),
+
+() => ({
+title: "FITNESS SKILL MISSION",
+category: "Fitness",
+difficulty: "Medium",
+duration: "30–60 mins",
+mission: `Learn and practise a physical skill:
+
+Choose ONE:
+- ${pick(skills)}
+- Try a harder variation if already known
+
+Rules:
+- 30 minutes minimum practice
+- Must show improvement (even small)`,
+requirements: ["30 min practice", "skill attempt", "progress shown"]
+}),
+
+() => ({
+title: "FOOD CREATION MISSION",
+category: "Cooking",
+difficulty: "Easy–Medium",
+duration: "45–90 mins",
+mission: `Create a meal from scratch.
+
+Rules:
+- Base: ${pick(foods)}
+- Must include: ${pick(ingredients)}
+- Must be something you've never made before
+
+Then rate it out of 10.`,
+requirements: ["Cook from scratch", "New variation", "Taste rating"]
+}),
+
+() => ({
+title: "WEIRD INVENTION MISSION",
+category: "Weird Creativity",
+difficulty: "Easy",
+duration: "30–60 mins",
+mission: `Invent something completely new:
+
+- A new sport
+- OR a new game
+- OR a new rule system for daily life
+
+Theme: ${pick(themes)}
+
+You must:
+- Name it
+- Explain rules
+- Test it once`,
+requirements: ["Create invention", "Name it", "Test once"]
+}),
+
+() => ({
+title: "SKILL LEARNING MISSION",
+category: "Skill Building",
+difficulty: "Medium",
+duration: "45–90 mins",
+mission: `Learn a new practical skill:
+
+Today’s focus:
+- ${pick(skills)}
+
+Rules:
+- 45 minutes focused practice
+- Must be able to demonstrate basic ability`,
+requirements: ["45 min practice", "basic competency"]
+}),
+
+() => ({
+title: "MAKE MONEY THINKING MISSION",
+category: "Business",
+difficulty: "Easy",
+duration: "20–40 mins",
+mission: `Spend time building a money idea:
+
+Task:
+- ${pick(moneyIdeas)}
+
+Output must be written down clearly:
+- What it is
+- How it would make money
+- First step to start it`,
+requirements: ["Idea created", "Monetisation plan", "Next step"]
+})
+
+];
+
+// 90% tangible outcome bias (duplicate weight for build/skill)
+const weightedGenerators = [
+generators[0], generators[0], generators[0], // build
+generators[1], generators[1], // fitness
+generators[2], generators[2], // food
+generators[3], // weird
+generators[4], generators[4], // skill
+generators[5] // money
+];
+
+// ================= GENERATE =================
 
 function generate(){
 
     let mission;
 
-    for(let i=0;i<30;i++){
-        const pool = pick([social, world, challenge]);
-        mission = pick(pool);
+    for(let i = 0; i < 30; i++){
+        const gen = pick(weightedGenerators);
+        mission = gen();
 
-        if(!history.includes(mission)) break;
+        if(!history.includes(mission.title + mission.mission)) break;
     }
 
-    history.push(mission);
+    history.push(mission.title + mission.mission);
 
     if(history.length > 300) history.shift();
 
     localStorage.setItem("history", JSON.stringify(history));
 
-    document.getElementById("challenge").innerText = mission;
+    currentMission = mission;
+
+    document.getElementById("challenge").innerText =
+`${mission.title}
+
+Category: ${mission.category}
+Difficulty: ${mission.difficulty}
+Duration: ${mission.duration}
+
+Mission:
+${mission.mission}
+
+Requirements:
+- ${mission.requirements.join("\n- ")}`;
 }
 
 // ================= COMPLETE =================
