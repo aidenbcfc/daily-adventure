@@ -29,12 +29,9 @@ body {
     border-radius:15px;
     margin:20px 0;
     min-height:220px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
+    white-space:pre-wrap;
     font-size:15px;
     line-height:1.5;
-    white-space:pre-wrap;
 }
 
 button {
@@ -75,263 +72,709 @@ p { margin:6px 0; }
 let streak = parseInt(localStorage.getItem("streak") || "0");
 let total = parseInt(localStorage.getItem("total") || "0");
 let history = JSON.parse(localStorage.getItem("history") || "[]");
+let recentCategories = JSON.parse(localStorage.getItem("recentCategories") || "[]");
 
 document.getElementById("streak").innerText = streak;
 document.getElementById("total").innerText = total;
-
-// ================= HELPERS =================
 
 function pick(arr){
     return arr[Math.floor(Math.random() * arr.length)];
 }
 
-// ================= CONTENT POOLS =================
+// ================= FULL MISSION LIBRARY =================
 
-const buildGoals = [
-"bridge between two chairs (25cm+ span)",
-"freestanding tower that supports weight for 60 seconds",
-"functional marble run with 3 direction changes",
-"ball launcher that hits a target",
-"self-standing structure that holds a phone",
-"paper structure resisting airflow for 20 seconds"
+const physicalMastery = [
+
+"Learn and practise a wall handstand hold with controlled entry and exit",
+"Train a strict push-up progression aiming for perfect form over speed",
+"Practise deep squat mobility and hold bottom position for comfort",
+"Learn controlled breathing while performing light bodyweight exercise",
+"Practise single-leg balance and hold each side for maximum time",
+"Train explosive jump technique focusing on soft landing mechanics",
+"Learn a slow tempo squat (5 seconds down, 5 seconds up)",
+"Practise shoulder mobility flow using full range circular movements",
+"Learn basic sprint start technique and explosive first step",
+"Perform a core stability circuit with no rest between movements",
+"Train controlled plank variations (front, side, reach extensions)",
+"Practise coordination drill combining opposite arm and leg movement",
+"Learn dynamic stretching routine for full body mobility improvement",
+"Train grip strength using towel hangs or static holds",
+"Practise controlled lunge variations with perfect knee tracking",
+"Learn wall sit endurance and track maximum time",
+"Train jumping control by practising silent landings repeatedly",
+"Practise crawling movement patterns (bear crawl variations)",
+"Learn hand-eye coordination drill using ball or object toss",
+"Train posterior chain activation (glute-focused movement control)",
+
+"Practise yoga sun salutation flow slowly and accurately",
+"Learn balance transition flow (standing → squat → balance → stand)",
+"Train ankle stability with controlled small-range movements",
+"Practise mobility flow focusing on hips and spine rotation",
+"Learn eccentric strength control in slow lowering movements",
+"Perform a full body activation routine before fatigue sets in",
+"Practise rhythm-based movement (timed steps or pulses)",
+"Train isometric holds across multiple joint positions",
+"Learn movement sequencing (combine 3 body movements smoothly)",
+"Practise reactive movement drills (respond to direction changes)",
+
+"Learn basic boxing stance and foot positioning control",
+"Shadowbox focusing only on form and guard discipline",
+"Practise controlled jab-cross combinations slowly",
+"Train defensive movement (slips, ducks, rolls) without power",
+"Learn basic kick mechanics with controlled balance",
+"Practise coordination between upper and lower body strikes",
+"Train reaction timing using random movement cues",
+"Practise distance control using footwork only",
+"Learn rhythm-based striking combinations",
+"Shadow movement focusing on fluid transitions",
+
+"Practise kettlebell/dumbbell substitute movement patterns using household items",
+"Train loaded carry simulation using heavy objects safely",
+"Practise slow controlled lifting mechanics with perfect posture",
+"Learn squat-to-press movement coordination",
+"Train hinge movement pattern (deadlift mechanics without weight)",
+"Practise controlled push-pull balance movements",
+"Learn full body circuit with emphasis on form over reps",
+"Train endurance through low-intensity continuous movement",
+
+"Practise animal flow basics (bear, crab, lizard movement patterns)",
+"Learn ground movement transitions (floor to standing smoothly)",
+"Train spinal articulation movements slowly and precisely",
+"Practise controlled rolling movements on floor safely",
+"Learn coordination flow linking 5 continuous movements",
+"Train movement creativity by combining learned patterns",
+
+"Practise static flexibility holds for hamstrings and hips",
+"Train shoulder flexibility through controlled stretching flow",
+"Learn spinal decompression and extension movements",
+"Practise ankle mobility under controlled load",
+"Train hip opening sequences for deep range movement",
+"Practise full body stretch recovery routine",
+
+"Practise endurance challenge: sustained movement for 20–30 minutes",
+"Train consistency by repeating one movement perfectly for 10 minutes",
+"Practise precision challenge: perfect reps only, no speed",
+"Train control challenge: slowest possible execution of movements",
+"Practise awareness challenge: focus entirely on muscle engagement",
+
+"Learn coordination challenge combining balance + movement + timing",
+"Train reaction drill using random timed cues",
+"Practise multi-direction movement flow (forward, lateral, backward)",
+"Learn controlled fatigue movement (maintain form under tiredness)",
+"Practise skill repetition until smooth automatic execution",
+
+"Practise posture correction session (standing + walking alignment)",
+"Train core engagement awareness during everyday movement",
+"Learn body scanning technique during exercise",
+"Practise controlled breathing synced with movement rhythm",
+"Train movement efficiency (reduce wasted motion in exercise)",
+
+"Practise freestyle movement session combining learned skills",
+"Train self-created movement flow routine",
+"Learn improvisational body movement for 10–15 minutes",
+"Practise linking strength + mobility in one continuous session",
+"Train expressive movement without structured routine"
+
 ];
 
-const buildMaterials = [
-"paper only",
-"cardboard only",
-"household junk only",
-"tape + paper only",
-"items from one room only"
+const creativeOutput = [
+
+"Design a fictional brand including name, purpose, target audience, and identity style",
+"Create a board game concept with win conditions, rules, and player goal",
+"Invent a new sport and fully define how it is played and scored",
+"Design a fictional world with 5 locations and explain their purpose",
+"Create a movie concept including plot, tone, and main conflict",
+"Write a character origin story for a completely fictional person",
+"Design a mobile app idea that solves a real-world problem",
+"Create a futuristic city and explain how daily life works inside it",
+"Design a fictional company and what makes it successful",
+"Create a clothing brand identity including aesthetic direction and vibe",
+"Invent a new form of entertainment and describe how people engage with it",
+"Design a video game concept including mechanics and progression system",
+"Create a fictional documentary idea and what it explores",
+"Design a new social media platform and what problem it solves",
+"Create a fictional product that should exist and explain its use",
+"Write a short story concept based on a unique central idea",
+"Design a fictional universe rule system (how reality works there)",
+"Create a concept for a futuristic job role and responsibilities",
+"Design a festival or event that does not currently exist",
+"Invent a new type of communication system",
+
+"Create a visual poster concept for a fictional event",
+"Design a logo system for a multi-part fictional brand",
+"Create a branding style guide (colors, tone, identity rules)",
+"Design packaging for a fictional product line",
+"Create an advertisement concept for a fake product",
+"Design a billboard campaign idea and message",
+"Create a magazine cover concept and theme",
+"Design a fictional album cover and music theme",
+
+"Write a dialogue scene between two fictional characters",
+"Create a story opening paragraph that hooks attention",
+"Design a plot twist for a fictional narrative",
+"Write a monologue from a fictional character perspective",
+"Create a backstory for a villain character",
+"Design a fictional friendship or relationship dynamic",
+
+"Invent a new type of tool or invention and explain function",
+"Design a machine that solves a daily life problem",
+"Create a futuristic household object and its use case",
+"Invent a wearable device that does something unique",
+"Design a transportation concept for the future",
+"Create a fictional energy system and how it works",
+
+"Design a personal life philosophy system and name it",
+"Create a productivity system with rules and structure",
+"Design a habit-building framework for humans",
+"Invent a decision-making framework for life choices",
+"Create a system for improving focus and attention",
+"Design a rule system for daily discipline",
+
+"Create a fictional game show concept with rules and structure",
+"Design a competition format and how someone wins",
+"Invent a reality-style challenge system",
+"Create a fictional sport league and structure",
+"Design a tournament system for a made-up activity",
+
+"Create a map of a fictional island with named regions",
+"Design a dungeon or maze concept with progression",
+"Create a treasure hunt concept with clues system",
+"Design a hidden world concept beneath modern cities",
+"Invent a parallel universe version of Earth",
+
+"Create a “what if” scenario and fully expand consequences",
+"Design an alternate version of modern life",
+"Invent a world where one law of physics is different",
+"Create a scenario where society functions differently",
+"Design a future prediction timeline (10–50 years)",
+
+"Create a meme concept that would go viral and explain why",
+"Design a fictional internet trend and how it spreads",
+"Invent a viral challenge concept (non-harmful)",
+"Create a fictional online community and its culture",
+"Design a digital subculture and its behaviours",
+
+"Create a concept for a creative AI assistant tool",
+"Design a system that helps people learn faster",
+"Invent a tool that improves creativity in daily life",
+"Create a learning platform concept for skills",
+"Design a system for tracking personal progress visually"
+
 ];
 
-const fitnessSkills = [
-"wall handstand progression",
-"10-min mobility flow",
-"bodyweight strength circuit",
-"core stability training",
-"balance control drill",
-"jump / plyometric session"
+const buildMissions = [
+
+"Build a desk organisation system that improves speed of access to your daily essentials",
+"Redesign your entire desk layout to optimise focus and reduce distractions",
+"Create a dedicated focus zone in your room with only essential items present",
+"Build a charging station system that keeps all devices and cables structured and tidy",
+"Design and implement a physical system for storing items you use every day efficiently",
+"Create a drop zone near your entry point for keys, wallet, and daily carry items",
+"Build a lighting setup in your room that changes the mood of the space intentionally",
+"Redesign your sleeping area layout to improve comfort and sleep quality",
+"Create a modular storage system that can be reconfigured based on daily needs",
+"Build a physical reminder system for tracking daily priorities visually",
+
+"Reorganise your room based on movement flow between key functional areas",
+"Redesign one section of your room into a dedicated productivity-only space",
+"Transform a part of your room into a relaxation-focused environment",
+"Rebuild your space to reduce clutter and improve mental clarity",
+"Create a system that separates work, rest, and storage areas clearly",
+
+"Build a system for organising clothes that reduces decision fatigue",
+"Create a quick-access storage system for frequently used items",
+"Build a categorisation system for personal belongings",
+"Design a physical layout that makes cleaning easier and faster",
+"Create a system that forces everything in your room to have a defined place",
+
+"Build a mini obstacle course inside your home and test it",
+"Create a physical movement path through your room with defined flow points",
+"Design a space that encourages movement instead of static sitting",
+"Build a setup that forces you to stand more during daily tasks",
+"Create a physical environment that supports active living",
+
+"Build a workstation setup that improves posture and reduces strain",
+"Create a standing-friendly desk or elevated work surface setup",
+"Redesign your workspace ergonomics for comfort and efficiency",
+"Build a dual-purpose workspace that supports both focus and relaxation",
+"Create a system that improves how you sit, stand, and move while working",
+
+"Build a personal “reset station” where you organise everything before bed",
+"Create a morning preparation zone that streamlines your routine",
+"Build a structured area for pre-work preparation",
+"Design a system that prepares you for the next day automatically",
+"Create a habit-supporting physical environment",
+
+"Build a simple visual tracking board for habits or goals",
+"Create a physical system for tracking progress on personal goals",
+"Design a wall or space that represents your weekly priorities",
+"Build a progress display system for motivation and clarity",
+"Create a visual structure that keeps your goals constantly visible",
+
+"Build a mini creative workspace for thinking, planning, or ideation",
+"Create a space specifically designed for brainstorming ideas",
+"Design a physical environment that enhances creativity",
+"Build a distraction-free idea generation corner",
+"Create a space that encourages writing, drawing, or thinking",
+
+"Build a storage optimisation system that reduces wasted space",
+"Reorganise your storage so everything becomes more accessible",
+"Create a system that improves how efficiently you store items",
+"Design a structure that makes retrieval of items instant",
+"Build a logical categorisation system for all belongings",
+
+"Build a cleaning optimisation system that makes maintenance faster",
+"Reorganise your room so it becomes easier to clean in under 10 minutes",
+"Create a system that prevents clutter from building up",
+"Design a physical environment that stays naturally organised",
+"Build a structure that reduces cleaning effort over time",
+
+"Build a multi-purpose furniture arrangement using what you already have",
+"Reconfigure your space to support multiple activities in one area",
+"Create a flexible room layout that adapts to different uses",
+"Design a space that can switch between work, rest, and creativity",
+"Build a hybrid environment that serves more than one function",
+
+"Build a sensory improvement setup (lighting, comfort, atmosphere)",
+"Create a room environment that improves mood and energy",
+"Design a calming physical space for recovery and rest",
+"Build a stimulating environment for productivity and focus",
+"Create a balanced environment that supports different mental states",
+
+"Build a personal organisation system that applies to your entire room",
+"Create a rule-based system for where everything belongs",
+"Design a structure that enforces order automatically",
+"Build a logic system for keeping your space consistently clean",
+"Create a framework for maintaining organisation long-term",
+
+"Build a small improvement project that fixes one frustration in your room",
+"Redesign one daily friction point to make it smoother",
+"Create a solution to one small inconvenience in your environment",
+"Build a fix for something you constantly waste time dealing with",
+"Design a physical improvement that removes a daily annoyance",
+
+"Build a full room audit and restructure based on usefulness of items",
+"Reorganise everything based on frequency of use",
+"Create zones in your room based on activity type",
+"Design a layout based on energy and function rather than placement",
+"Build a system that reflects how you actually live day-to-day"
+
 ];
 
-const skillTasks = [
-"learn 3-ball juggling basics",
-"learn a simple magic trick",
-"learn 5 basic knots",
-"memorisation technique (loci method)",
-"mental maths shortcut",
-"basic coding logic thinking exercise"
+const skillAcquisition = [
+
+"Learn a basic juggling pattern and achieve 10 consistent catches",
+"Learn a simple coin spin or finger trick and perform it smoothly",
+"Learn 10 basic phrases in a new language and use them in context",
+"Learn a memory palace technique and store 5 items in it",
+"Learn mental arithmetic shortcuts for fast addition and subtraction",
+"Learn how to solve a Rubik’s cube first layer consistently",
+"Learn basic rhythm tapping patterns and maintain timing for 2 minutes",
+"Learn a beginner card shuffle technique with control and flow",
+"Learn how to control breathing to slow heart rate under effort",
+"Learn a simple hand-eye coordination drill using a ball or object",
+
+"Learn basic drawing perspective (1-point perspective practice)",
+"Learn how to sketch basic human proportions accurately",
+"Learn shading techniques using light and shadow control",
+"Learn how to draw simple 3D shapes with depth accuracy",
+"Learn how to replicate objects by observation only",
+
+"Learn a simple storytelling structure (beginning, conflict, resolution)",
+"Learn how to write a compelling short hook sentence",
+"Learn how to summarise complex ideas into simple explanations",
+"Learn how to structure ideas clearly in bullet form thinking",
+"Learn how to mentally organise thoughts before speaking",
+
+"Learn basic negotiation principles and apply them in a scenario",
+"Learn how persuasion works through framing and language",
+"Learn how to present ideas clearly and confidently",
+"Learn how to improve clarity in communication by simplifying speech",
+"Learn how to actively listen and summarise what someone says",
+
+"Learn focus training technique (deep work for 20–30 minutes)",
+"Learn how to eliminate distractions during a task session",
+"Learn how to structure a 1-hour productive work block",
+"Learn how attention switching affects performance and test it",
+"Learn how to maintain single-task focus under pressure",
+
+"Learn basic habit formation principles and map your own habits",
+"Learn how cues and triggers influence behaviour",
+"Learn how to break a small habit loop intentionally",
+"Learn how to replace one habit with another effectively",
+"Learn how to track behavioural patterns over a day",
+
+"Learn basic fitness technique (perfect squat form focus)",
+"Learn push-up form correction and execution control",
+"Learn plank progression and proper core engagement",
+"Learn how to activate glutes properly during movement",
+"Learn correct posture alignment while standing and walking",
+
+"Learn how to read body language basics in real situations",
+"Learn how facial expressions indicate emotion changes",
+"Learn how to observe micro-behaviours in people",
+"Learn how to improve awareness of surroundings",
+"Learn how to notice detail differences in environments",
+
+"Learn basic music rhythm structure and beat counting",
+"Learn how to recognise tempo and maintain timing",
+"Learn how to clap or tap consistent rhythm patterns",
+"Learn how to break down simple songs into beats",
+"Learn how rhythm affects coordination and movement",
+
+"Learn basic decision-making frameworks (pros vs cons speed method)",
+"Learn how to simplify complex decisions into steps",
+"Learn how to reduce overthinking using structured thinking",
+"Learn how to evaluate outcomes logically",
+"Learn how to identify bias in personal decisions",
+
+"Learn how to create mental models for problem solving",
+"Learn how systems thinking works in simple examples",
+"Learn how to break problems into smaller components",
+"Learn how to identify root causes instead of symptoms",
+"Learn how to structure thinking visually or mentally",
+
+"Learn basic coding logic (if/else thinking without coding required)",
+"Learn how algorithms work through everyday examples",
+"Learn how sequences and loops appear in real life",
+"Learn how to think in step-by-step instructions",
+"Learn how to debug a simple logical problem",
+
+"Learn how to improve recall by testing yourself immediately",
+"Learn how spaced repetition works in practice",
+"Learn how memory is strengthened through retrieval practice",
+"Learn how to encode information more effectively",
+"Learn how attention improves memory retention",
+
+"Learn how to build confidence through repetition exposure",
+"Learn how discomfort reduces over repeated exposure",
+"Learn how to handle awkward social moments calmly",
+"Learn how to regulate nerves in real-time situations",
+"Learn how body posture affects confidence levels",
+
+"Learn how to structure a 1-page idea or concept clearly",
+"Learn how to turn messy thoughts into structured output",
+"Learn how to simplify communication without losing meaning",
+"Learn how to explain complex topics in plain language",
+"Learn how to summarise learning into key points",
+
+"Learn how to observe cause-and-effect in daily behaviour",
+"Learn how small actions influence bigger outcomes",
+"Learn how to predict results based on patterns",
+"Learn how to identify behavioural loops in yourself",
+"Learn how to evaluate improvements objectively",
+
+"Learn how to design simple personal systems for tasks",
+"Learn how to organise information logically",
+"Learn how to categorise ideas effectively",
+"Learn how to build mental organisation frameworks",
+"Learn how to structure daily thinking more efficiently",
+
+"Learn how to improve reaction time using simple drills",
+"Learn how to respond faster to visual or audio cues",
+"Learn how anticipation affects performance",
+"Learn how to stay alert under low stimulation",
+"Learn how attention speed can be trained and improved"
+
 ];
 
-const creativeTasks = [
-"design a board game",
-"invent a new sport",
-"create a fictional world",
-"design a brand identity",
-"write a character origin story",
-"invent a life system or rule set"
+const lifeUpgrade = [
+
+"Completely redesign your desk layout to maximise focus and minimise distraction zones",
+"Reorganise your entire room based on function rather than placement",
+"Create a morning routine structure and physically set your environment to support it",
+"Design a nightly reset routine and set up your space to enforce it",
+"Declutter one full area and remove anything you haven’t used in 30 days",
+
+"Create a dedicated focus environment with zero unnecessary items",
+"Redesign your sleeping area to improve rest quality and comfort",
+"Build a simple system for keeping your room clean automatically",
+"Organise your digital desktop and files into a logical structure",
+"Remove one daily friction (something that slows you down every day)",
+
+"Create a structured ‘landing zone’ for all items you drop when coming home",
+"Reorganise your wardrobe to reduce decision fatigue when choosing clothes",
+"Set up a clear separation between work space and relaxation space",
+"Design a system for managing cables and devices in your room",
+"Reset your entire room into a clean baseline state",
+
+"Create a weekly planning system you can physically see every day",
+"Design a visual habit tracker for your key daily behaviours",
+"Set up a system that forces your priorities to stay visible",
+"Create a physical reminder system for your most important goal",
+"Build a structure that tracks progress without using apps",
+
+"Redesign your workspace ergonomics to improve posture and comfort",
+"Adjust your chair, desk, and screen setup for optimal positioning",
+"Create a standing or movement-friendly work setup",
+"Optimise lighting in your workspace for focus and clarity",
+"Remove distractions from your immediate working environment",
+
+"Create a simple system for organising incoming items (mail, clothes, objects)",
+"Design a rule that ensures everything in your room has a place",
+"Organise all flat surfaces so they stay clear by default",
+"Create a system that prevents clutter accumulation long-term",
+"Reset your storage so every category is clearly defined",
+
+"Build a ‘start of day’ preparation zone for all essentials",
+"Create an evening wind-down environment that encourages rest",
+"Design a transition space between work and relaxation",
+"Set up your room so each activity has a defined location",
+"Create a system that makes switching tasks easier and faster",
+
+"Identify one daily annoyance and physically redesign it out of your environment",
+"Fix one inefficiency in your room that wastes time every day",
+"Improve one repetitive action by redesigning its environment",
+"Remove one source of distraction permanently from your space",
+"Upgrade one area that causes mental friction",
+
+"Reorganise your space based on energy flow (high focus vs low focus areas)",
+"Separate your room into zones for productivity, rest, and storage",
+"Create a layout that matches how you actually live, not ideal behaviour",
+"Redesign your room so movement between tasks feels natural",
+"Build a flow-based environment rather than a static layout",
+
+"Create a system for tracking tasks without relying on digital tools",
+"Design a physical checklist system for daily priorities",
+"Set up a visual board for ongoing goals and tasks",
+"Build a simple analogue productivity system for your day",
+"Create a rule-based system for what gets done first",
+
+"Reset your entire environment into a ‘clean slate’ version",
+"Remove everything non-essential from visible areas",
+"Rebuild your room layout from scratch with intention",
+"Clear all surfaces and redefine their purpose",
+"Re-establish order in your space from baseline",
+
+"Create a system for managing personal items you always misplace",
+"Design a permanent storage solution for frequently lost objects",
+"Set up a habit loop that prevents losing track of belongings",
+"Organise your essentials so they always return to one location",
+"Build a retrieval system for daily-use items",
+
+"Improve your phone setup to reduce distraction and increase focus",
+"Reorganise apps into functional categories only",
+"Remove or hide non-essential apps completely",
+"Set your phone layout to support productivity only",
+"Create friction for time-wasting apps",
+
+"Design a system for improving your daily energy levels",
+"Adjust your environment to support better sleep and recovery",
+"Optimise your space for wake-up clarity and alertness",
+"Create environmental cues that support better routines",
+"Build a system that improves consistency in your daily rhythm",
+
+"Create a personal ‘reset ritual’ for ending each day properly",
+"Design a 10-minute daily reset system for your environment",
+"Set up a habit of clearing your space before sleeping",
+"Build a system that resets your environment automatically each night",
+"Create a closing routine that prepares tomorrow in advance",
+
+"Rebuild one section of your room to serve a completely new purpose",
+"Convert a cluttered area into a functional workspace",
+"Transform a passive space into an active use zone",
+"Redesign a neglected corner into something useful",
+"Upgrade one part of your environment into a dedicated function",
+
+"Create a rule system that enforces organisation automatically",
+"Design a simple constraint that keeps your space tidy by default",
+"Build a behavioural system that prevents clutter creation",
+"Set up environmental rules that guide your behaviour",
+"Create a structure that reduces decision fatigue in daily life"
+
 ];
 
-const cookingTasks = [
-"cook a meal from scratch using 5 ingredients max",
-"recreate a fast food item",
-"create a high-protein meal under £5",
-"make something using 1 random ingredient",
-"breakfast combining sweet + savoury",
-"fridge clean-out meal"
+const exploration = [
+
+"Walk to a nearby area you’ve never properly stopped in and observe it in detail for 10 minutes",
+"Take a completely different walking route and note at least 5 things you’ve never noticed before",
+"Go to a local shop you’ve never entered and explore it without buying anything",
+"Visit a supermarket and deliberately explore a section you usually ignore",
+
+"Sit in a public place for 15 minutes and observe human behaviour patterns quietly",
+"Walk with no destination and let instinct choose every turn for 20 minutes",
+"Go to a nearby park and sit in a completely different spot than usual",
+"Explore a street you usually walk past without paying attention",
+
+"Go to a café and stay without using your phone for 20 minutes",
+"Visit a transport hub and observe how people move through it like a system",
+
+"Walk a route backwards (reverse your normal journey home)",
+"Take the longest possible route home and observe differences",
+"Walk in a direction you normally avoid and see where it leads",
+
+"Go to a random local shop category (not your usual type) and browse slowly",
+"Visit a place you pass often but have never entered",
+"Explore a quiet street and mentally map every detail",
+
+"Sit somewhere unfamiliar and write down everything you notice in your surroundings",
+"Walk and focus only on sounds for 10 minutes (no visual analysis)",
+"Walk and focus only on colours and visual patterns for 10 minutes",
+"Walk and focus only on people’s movement patterns for 10 minutes",
+
+"Go to a busy area and observe crowd flow like a system or machine",
+"Find a hidden or less obvious path between two known places",
+
+"Visit a library, bookstore, or reading space and explore without a goal",
+"Go to a shopping centre and explore one floor you normally ignore",
+
+"Walk to a landmark but take a completely different path than usual",
+"Explore the edge of your usual walking radius",
+
+"Go to a café you’ve been to before but sit in a different seat or area",
+"Visit a park and walk every path inside it once",
+
+"Go somewhere nearby and try to mentally draw a map from memory afterwards",
+"Walk through your area and identify 10 micro-details you usually miss",
+
+"Explore a residential street and observe how different homes are structured",
+"Walk through a commercial area and observe patterns of business layout",
+
+"Go somewhere slightly uncomfortable socially and just observe quietly",
+"Spend time in a place where you are normally just passing through",
+
+"Walk without headphones and notice environmental audio differences",
+"Walk with full attention on physical sensations (wind, temperature, ground)",
+
+"Go somewhere and observe how people interact with each other socially",
+"Sit in a public place and track repeating behavioural patterns",
+
+"Explore a new food section in a supermarket you’ve never explored",
+"Visit a local market and browse every stall without intention to buy",
+
+"Walk through your area and identify places you usually rush past",
+"Go to a familiar place and try to see it as if you’ve never been there",
+
+"Visit a bus stop or station and observe waiting behaviour patterns",
+"Take public transport to a random nearby stop and explore that area",
+
+"Walk into a building you’ve never entered and stay for 10 minutes",
+"Go somewhere nearby and intentionally slow your pace to half speed",
+
+"Explore your neighbourhood at a time of day you usually aren’t outside",
+"Walk and focus only on architecture and building structure details",
+
+"Go to a public square or open area and observe spatial behaviour",
+"Find a viewpoint or elevated area and observe the environment from above",
+
+"Walk through a busy area and observe decision-making in real time (where people go, stop, turn)",
+"Go somewhere new and focus only on how the environment is organised",
+
+"Visit a place and try to identify its purpose just by observing it",
+"Walk and classify everything you see into categories mentally",
+
+"Explore a street and count how many micro-environments exist within it",
+"Go somewhere familiar and try to identify 10 things you never noticed before",
+
+"Walk through your local area and identify “dead zones” vs active zones",
+"Explore a place and focus on flow of movement rather than objects",
+
+"Go somewhere and observe how light changes perception of the environment",
+"Walk at a different speed than usual and notice perception changes",
+
+"Visit a place and stay longer than you normally would without distraction",
+"Walk and intentionally avoid your usual shortcuts",
+
+"Explore a nearby place you’ve never been at night or different lighting condition",
+"Walk through your area and focus only on textures of surfaces",
+
+"Go somewhere and observe how people use space differently depending on time",
+"Walk and focus on repetition patterns in environment design",
+
+"Visit a place and try to mentally redesign it in real time",
+"Explore a familiar area and identify inefficiencies in layout",
+
+"Walk through your environment and observe emotional reactions to different spaces",
+"Go somewhere and focus only on how your attention shifts between stimuli",
+
+"Explore a nearby area and identify what makes it feel different from others",
+
+"Walk without a goal and try to return home using memory only",
+
+"Go somewhere and document mentally 20 small details you’d normally ignore"
+
 ];
 
-const weirdTasks = [
-"live 30 mins without technology",
-"rearrange your room for optimisation",
-"1 hour only asking questions (no statements)",
-"invent a daily ritual and repeat it 3 times",
-"design a fake emergency drill",
-"change how you walk for 1 hour (rule system)"
-];
-
-const businessTasks = [
-"write a simple digital product idea",
-"list 3 things you could sell online",
-"design a £10 micro service",
-"map a side hustle idea",
-"find a problem you could solve",
-"plan a 7-day test idea"
+const perspectiveShift = [
+"Reflect on your current life direction",
+"Write personal philosophy",
+"Observe thoughts without changing them",
+"Simulate your life 5 years ahead",
+"Analyse a recent decision",
+"Sit in silence for 10 minutes",
+"Write what drains your energy",
+"Question one belief deeply",
+"Map how your habits formed",
+"Reflect on avoidance behaviours",
+"Imagine alternative self version",
+"Write ideal day structure",
+"Observe emotional reactions",
+"Think about motivation drivers"
 ];
 
 // ================= CATEGORY SYSTEM =================
 
-const categories = [
-{
-weight: 30,
-generator: () => ({
-title: "BUILD MISSION",
-category: "BUILD",
-difficulty: "Medium",
-duration: "60–120 mins",
-mission:
-`Build a ${pick(buildGoals)}.
+const library = {
+physicalMastery,
+creativeOutput,
+buildMissions,
+skillAcquisition,
+lifeUpgrade,
+exploration,
+perspectiveShift
+};
 
-Constraints:
-- Must use only ${pick(buildMaterials)}
-- Must be freestanding or functional
-- Must pass a 30-second stability test`,
-requirements: ["Functional build", "Stability test", "Defined purpose"]
-})
-},
+const categoryNames = Object.keys(library);
 
-{
-weight: 20,
-generator: () => ({
-title: "FITNESS MISSION",
-category: "FITNESS",
-difficulty: "Medium",
-duration: "30–60 mins",
-mission:
-`Complete a physical training session:
+// ================= ANTI-REPEAT (LIGHTWEIGHT BUT EFFECTIVE) =================
 
-Focus: ${pick(fitnessSkills)}
+function getCategory(){
 
-Rules:
-- Minimum 30 minutes
-- Track reps, time or attempts`,
-requirements: ["30 min training", "tracked progress"]
-})
-},
+    let options = categoryNames.filter(c => !recentCategories.includes(c));
 
-{
-weight: 20,
-generator: () => ({
-title: "SKILL MISSION",
-category: "SKILL",
-difficulty: "Medium",
-duration: "45–90 mins",
-mission:
-`Learn and demonstrate:
+    if(options.length === 0){
+        recentCategories = [];
+        options = categoryNames;
+    }
 
-Task: ${pick(skillTasks)}
+    const chosen = pick(options);
 
-You must be able to demonstrate or explain it afterwards.`,
-requirements: ["Learning session", "Demonstration ability"]
-})
-},
+    recentCategories.push(chosen);
 
-{
-weight: 15,
-generator: () => ({
-title: "CREATIVE MISSION",
-category: "CREATIVE",
-difficulty: "Easy–Medium",
-duration: "45–90 mins",
-mission:
-`Create something original:
+    if(recentCategories.length > 3){
+        recentCategories.shift();
+    }
 
-Task: ${pick(creativeTasks)}
+    localStorage.setItem("recentCategories", JSON.stringify(recentCategories));
 
-Include:
-- Name
-- Structure
-- Purpose`,
-requirements: ["Original creation", "Named concept"]
-})
-},
-
-{
-weight: 10,
-generator: () => ({
-title: "COOKING MISSION",
-category: "COOK",
-difficulty: "Easy–Medium",
-duration: "45–90 mins",
-mission:
-`Cook a meal:
-
-Task: ${pick(cookingTasks)}
-
-Must be something new to you.`,
-requirements: ["Cooked meal", "New recipe"]
-})
-},
-
-{
-weight: 5,
-generator: () => ({
-title: "WEIRD MISSION",
-category: "WEIRD",
-difficulty: "Easy",
-duration: "30–60 mins",
-mission:
-`Run a behavioural experiment:
-
-Task: ${pick(weirdTasks)}
-
-Reflect afterwards on the experience.`,
-requirements: ["Experiment", "Reflection"]
-})
-},
-
-{
-weight: 5,
-generator: () => ({
-title: "BUSINESS MISSION",
-category: "BUSINESS",
-difficulty: "Easy",
-duration: "20–40 mins",
-mission:
-`Create a money idea:
-
-Task: ${pick(businessTasks)}
-
-Include:
-- Monetisation method
-- First step`,
-requirements: ["Idea", "Monetisation plan"]
-})
+    return chosen;
 }
-];
 
-// ================= GENERATION =================
-
-function weightedPick(){
-    let pool = [];
-
-    categories.forEach(cat => {
-        for(let i = 0; i < cat.weight; i++){
-            pool.push(cat.generator);
-        }
-    });
-
-    return pick(pool);
-}
+// ================= GENERATE =================
 
 function generate(){
 
-    let mission;
+    const category = getCategory();
+    const mission = pick(library[category]);
 
-    for(let i = 0; i < 30; i++){
-        const gen = weightedPick();
-        mission = gen();
+    const key = category + mission;
 
-        if(!history.includes(mission.title + mission.mission)) break;
+    if(history.includes(key)){
+        return generate();
     }
 
-    history.push(mission.title + mission.mission);
+    history.push(key);
 
-    if(history.length > 300) history.shift();
+    if(history.length > 300){
+        history.shift();
+    }
 
     localStorage.setItem("history", JSON.stringify(history));
 
     document.getElementById("challenge").innerText =
-`${mission.title}
+`CATEGORY: ${category.toUpperCase()}
 
-Category: ${mission.category}
-Difficulty: ${mission.difficulty}
-Duration: ${mission.duration}
-
-MISSION:
-${mission.mission}
-
-REQUIREMENTS:
-- ${mission.requirements.join("\n- ")}`;
+${mission}`;
 }
 
 // ================= COMPLETE =================
