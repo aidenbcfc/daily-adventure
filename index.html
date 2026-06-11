@@ -128,10 +128,8 @@ p { margin:6px 0; }
     <h1>Life Quest Generator</h1>
 
     <div class="card" id="challenge">
-
         <div id="rarityLabel"></div>
         <div id="missionText">Press generate</div>
-
     </div>
 
     <button class="generate" onclick="generate()">Generate Quest</button>
@@ -169,10 +167,16 @@ let currentRarity = null;
 // ================= INIT =================
 //
 
-document.getElementById("streak").innerText = streak;
-document.getElementById("total").innerText = total;
+document.addEventListener("DOMContentLoaded", () => {
 
-updateXPUI();
+    const streakEl = document.getElementById("streak");
+    const totalEl = document.getElementById("total");
+
+    if (streakEl) streakEl.innerText = streak;
+    if (totalEl) totalEl.innerText = total;
+
+    updateXPUI();
+});
 
 //
 // ================= HELPERS =================
@@ -195,11 +199,15 @@ function showXPAnimation(amount) {
 
 function updateXPUI() {
 
-    let xpNeeded = level * 100;
-    let percent = (xp / xpNeeded) * 100;
+    const levelEl = document.getElementById("level");
+    const xpFill = document.getElementById("xpFill");
 
-    document.getElementById("level").innerText = level;
-    document.getElementById("xpFill").style.width = percent + "%";
+    let xpNeeded = level * 100;
+
+    let percent = Math.min((xp / xpNeeded) * 100, 100);
+
+    if (levelEl) levelEl.innerText = level;
+    if (xpFill) xpFill.style.width = percent + "%";
 }
 
 function addXP(amount) {
@@ -226,7 +234,10 @@ function addXP(amount) {
 
     updateXPUI();
 
-    autoGenerateNextQuest();
+    // SAFE HOOK (second half may or may not exist yet)
+    if (typeof autoGenerateNextQuest === "function") {
+        autoGenerateNextQuest();
+    }
 }
 
 //
@@ -254,12 +265,14 @@ function resetGame() {
     history = [];
     recentCategories = [];
 
-    document.getElementById("streak").innerText = streak;
-    document.getElementById("total").innerText = total;
+    const streakEl = document.getElementById("streak");
+    const totalEl = document.getElementById("total");
+
+    if (streakEl) streakEl.innerText = streak;
+    if (totalEl) totalEl.innerText = total;
 
     updateXPUI();
 }
-
 // ================= FULL MISSION LIBRARY =================
 
 const physicalMastery = [
@@ -1267,13 +1280,13 @@ function getRarity() {
 
 function generate(){
 
-    document.getElementById("challenge").style.boxShadow = "none";
+    const card = document.getElementById("challenge");
+    if (card) card.style.boxShadow = "none";
 
     const category = getCategory();
-
     const missionList = library[category] || [];
 
-    if(missionList.length === 0){
+    if (!missionList.length) {
         console.warn("Empty category:", category);
         return;
     }
@@ -1299,13 +1312,21 @@ function generate(){
 
     currentRarity = getRarity();
 
-    document.getElementById("rarityLabel").innerText = currentRarity.name.toUpperCase();
-    document.getElementById("rarityLabel").style.color = currentRarity.color;
+    const rarityEl = document.getElementById("rarityLabel");
+    const missionEl = document.getElementById("missionText");
 
-    document.getElementById("missionText").innerText = mission;
+    if (rarityEl) {
+        rarityEl.innerText = currentRarity.name.toUpperCase();
+        rarityEl.style.color = currentRarity.color;
+    }
 
-    document.getElementById("challenge").style.boxShadow =
-        `0 0 20px ${currentRarity.color}`;
+    if (missionEl) {
+        missionEl.innerText = mission;
+    }
+
+    if (card) {
+        card.style.boxShadow = `0 0 20px ${currentRarity.color}`;
+    }
 }
 
 //
@@ -1328,8 +1349,11 @@ function complete(){
         localStorage.setItem("last", today);
     }
 
-    document.getElementById("streak").innerText = streak;
-    document.getElementById("total").innerText = total;
+    const streakEl = document.getElementById("streak");
+    const totalEl = document.getElementById("total");
+
+    if (streakEl) streakEl.innerText = streak;
+    if (totalEl) totalEl.innerText = total;
 }
 
 //
@@ -1341,3 +1365,8 @@ function autoGenerateNextQuest() {
         generate();
     }, 600);
 }
+
+</script>
+
+</body>
+</html>
