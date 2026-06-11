@@ -261,6 +261,21 @@ function resetGame() {
     updateXPUI();
 }
 
+//
+// ================= NEW CHANGE: AUTO GENERATE =================
+//
+
+function autoGenerateNextQuest() {
+    setTimeout(() => {
+        generate();
+    }, 600); // small delay so XP animation finishes cleanly
+}
+
+</script>
+
+</body>
+</html>
+
 // ================= FULL MISSION LIBRARY =================
 
 const physicalMastery = [
@@ -1268,13 +1283,12 @@ function getRarity() {
 
 function generate(){
 
-    // reset previous glow (important fix)
+    // reset old glow
     document.getElementById("challenge").style.boxShadow = "none";
 
     const category = getCategory();
     let mission = pick(library[category]);
 
-    // safety fallback
     if(!mission){
         mission = "Complete a random challenge for 5 minutes.";
     }
@@ -1293,16 +1307,15 @@ function generate(){
 
     localStorage.setItem("history", JSON.stringify(history));
 
-    // 🎲 RARITY
+    // assign rarity
     currentRarity = getRarity();
 
-    // UPDATE UI
+    // update UI
     document.getElementById("rarityLabel").innerText = currentRarity.name.toUpperCase();
     document.getElementById("rarityLabel").style.color = currentRarity.color;
 
     document.getElementById("missionText").innerText = mission;
 
-    // CARD GLOW
     document.getElementById("challenge").style.boxShadow =
         `0 0 20px ${currentRarity.color}`;
 }
@@ -1316,6 +1329,7 @@ function complete(){
     total++;
     localStorage.setItem("total", total);
 
+    // XP from rarity
     addXP(currentRarity ? currentRarity.xp : 10);
 
     let last = localStorage.getItem("last");
@@ -1329,6 +1343,19 @@ function complete(){
 
     document.getElementById("streak").innerText = streak;
     document.getElementById("total").innerText = total;
+
+    // AUTO GENERATE NEXT QUEST
+    autoGenerateNextQuest();
+}
+
+//
+// ================= AUTO GENERATE =================
+//
+
+function autoGenerateNextQuest() {
+    setTimeout(() => {
+        generate();
+    }, 600);
 }
 
 </script>
