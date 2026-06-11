@@ -169,13 +169,8 @@ let isLocked = false;
 //
 
 document.addEventListener("DOMContentLoaded", () => {
-
-    const streakEl = document.getElementById("streak");
-    const totalEl = document.getElementById("total");
-
-    if (streakEl) streakEl.innerText = streak;
-    if (totalEl) totalEl.innerText = total;
-
+    document.getElementById("streak").innerText = streak;
+    document.getElementById("total").innerText = total;
     updateXPUI();
 });
 
@@ -185,17 +180,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function pick(arr){
     return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function showXPAnimation(amount) {
-
-    const popup = document.createElement("div");
-    popup.className = "xp-popup";
-    popup.innerText = `+${amount} XP`;
-
-    document.body.appendChild(popup);
-
-    setTimeout(() => popup.remove(), 1000);
 }
 
 function setButtonsDisabled(state) {
@@ -211,16 +195,24 @@ function setButtonsDisabled(state) {
     isLocked = state;
 }
 
-function updateXPUI() {
+function showXPAnimation(amount) {
 
-    const levelEl = document.getElementById("level");
-    const xpFill = document.getElementById("xpFill");
+    const popup = document.createElement("div");
+    popup.className = "xp-popup";
+    popup.innerText = `+${amount} XP`;
+
+    document.body.appendChild(popup);
+
+    setTimeout(() => popup.remove(), 1000);
+}
+
+function updateXPUI() {
 
     let xpNeeded = level * 100;
     let percent = Math.min((xp / xpNeeded) * 100, 100);
 
-    if (levelEl) levelEl.innerText = level;
-    if (xpFill) xpFill.style.width = percent + "%";
+    document.getElementById("level").innerText = level;
+    document.getElementById("xpFill").style.width = percent + "%";
 }
 
 function addXP(amount) {
@@ -265,13 +257,23 @@ function resetGame() {
     history = [];
     recentCategories = [];
 
-    const streakEl = document.getElementById("streak");
-    const totalEl = document.getElementById("total");
-
-    if (streakEl) streakEl.innerText = streak;
-    if (totalEl) totalEl.innerText = total;
+    document.getElementById("streak").innerText = streak;
+    document.getElementById("total").innerText = total;
 
     updateXPUI();
+}
+
+//
+// ================= IMPORTANT FIX (AUTO GENERATE FLOW CONTROL) =================
+//
+
+function triggerNextQuestAfterDelay() {
+
+    // small delay ensures UI finishes updating first
+    setTimeout(() => {
+        generate();
+        setButtonsDisabled(false); // unlock AFTER new quest exists
+    }, 800);
 }
 // ================= FULL MISSION LIBRARY =================
 
@@ -1288,10 +1290,7 @@ function generate(){
     const category = getCategory();
     const missionList = library[category] || [];
 
-    if (!missionList.length) {
-        console.warn("Empty category:", category);
-        return;
-    }
+    if (!missionList.length) return;
 
     let mission = pick(missionList);
 
@@ -1355,23 +1354,13 @@ function complete(){
         localStorage.setItem("last", today);
     }
 
-    const streakEl = document.getElementById("streak");
-    const totalEl = document.getElementById("total");
-
-    if (streakEl) streakEl.innerText = streak;
-    if (totalEl) totalEl.innerText = total;
+    document.getElementById("streak").innerText = streak;
+    document.getElementById("total").innerText = total;
 
     showCongrats();
 
-    setTimeout(() => {
-
-        generate();
-
-        setTimeout(() => {
-            setButtonsDisabled(false);
-        }, 300);
-
-    }, 1200);
+    // IMPORTANT FIX: always generate AFTER congrats
+    triggerNextQuestAfterDelay();
 }
 
 //
@@ -1399,18 +1388,26 @@ function showCongrats() {
 
     setTimeout(() => {
         box.remove();
-    }, 1200);
+    }, 1000);
 }
 
 //
-// ================= AUTO GENERATE HOOK =================
+// ================= AUTO FLOW CONTROL =================
 //
 
-function autoGenerateNextQuest() {
+function triggerNextQuestAfterDelay() {
+
     setTimeout(() => {
-        generate();
-    }, 600);
+
+        generate();              // new quest ALWAYS appears
+        setButtonsDisabled(false); // unlock AFTER generation
+
+    }, 900);
 }
+
+//
+// ================= END OF FILE =================
+//
 
 </script>
 
