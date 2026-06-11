@@ -228,6 +228,9 @@ function addXP(amount) {
     localStorage.setItem("level", level);
 
     updateXPUI();
+
+    // ✅ REAL FUNCTION CALL (THIS MAKES AUTO GENERATE WORK)
+    autoGenerateNextQuest();
 }
 
 //
@@ -260,22 +263,6 @@ function resetGame() {
 
     updateXPUI();
 }
-
-//
-// ================= NEW CHANGE: AUTO GENERATE =================
-//
-
-function autoGenerateNextQuest() {
-    setTimeout(() => {
-        generate();
-    }, 600); // small delay so XP animation finishes cleanly
-}
-
-</script>
-
-</body>
-</html>
-
 // ================= FULL MISSION LIBRARY =================
 
 const physicalMastery = [
@@ -1235,7 +1222,7 @@ const library = {
     buildMissions,
     skillAcquisition,
     lifeUpgrade,
-    mindchallenges,
+    mindchallenges
 };
 
 const categoryNames = Object.keys(library);
@@ -1283,20 +1270,27 @@ function getRarity() {
 
 function generate(){
 
-    // reset old glow
+    // reset visual glow
     document.getElementById("challenge").style.boxShadow = "none";
 
     const category = getCategory();
-    let mission = pick(library[category]);
+    const missionList = library[category];
 
-    if(!mission){
-        mission = "Complete a random challenge for 5 minutes.";
+    if(!Array.isArray(missionList) || missionList.length === 0){
+        console.warn("Missing or empty category:", category);
+        return;
     }
 
-    const key = category + mission;
+    let mission = pick(missionList);
 
-    if(history.includes(key)){
-        return generate();
+    // prevent duplicates safely (no recursion)
+    let key = category + mission;
+    let attempts = 0;
+
+    while(history.includes(key) && attempts < 10){
+        mission = pick(missionList);
+        key = category + mission;
+        attempts++;
     }
 
     history.push(key);
@@ -1329,9 +1323,10 @@ function complete(){
     total++;
     localStorage.setItem("total", total);
 
-    // XP from rarity
+    // XP based on rarity
     addXP(currentRarity ? currentRarity.xp : 10);
 
+    // streak system
     let last = localStorage.getItem("last");
     let today = new Date().toDateString();
 
@@ -1343,9 +1338,6 @@ function complete(){
 
     document.getElementById("streak").innerText = streak;
     document.getElementById("total").innerText = total;
-
-    // AUTO GENERATE NEXT QUEST
-    autoGenerateNextQuest();
 }
 
 //
@@ -1358,7 +1350,21 @@ function autoGenerateNextQuest() {
     }, 600);
 }
 
-</script>
-
-</body>
-</html>
+//
+// ================= IMPORTANT SYSTEM NOTE =================
+//
+// This file depends on your FIRST HALF containing:
+//
+// ✔ addXP() function
+// ✔ updateXPUI() function
+// ✔ pick() function
+// ✔ state variables (xp, level, streak, total, history)
+//
+// WITHOUT those, this file will not work.
+//
+// Also ensure this is present in addXP():
+//
+//     autoGenerateNextQuest();
+//
+// This connects XP gain → next quest generation.
+// ======================================================
