@@ -1209,6 +1209,8 @@ const mindchallenges = [
 
 
 //
+
+//
 // ================= CATEGORY SYSTEM =================
 //
 
@@ -1266,8 +1268,16 @@ function getRarity() {
 
 function generate(){
 
+    // reset previous glow (important fix)
+    document.getElementById("challenge").style.boxShadow = "none";
+
     const category = getCategory();
-    const mission = pick(library[category]);
+    let mission = pick(library[category]);
+
+    // safety fallback
+    if(!mission){
+        mission = "Complete a random challenge for 5 minutes.";
+    }
 
     const key = category + mission;
 
