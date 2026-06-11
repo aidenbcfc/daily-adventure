@@ -264,16 +264,47 @@ function resetGame() {
 }
 
 //
-// ================= IMPORTANT FIX (AUTO GENERATE FLOW CONTROL) =================
+// ================= CRITICAL FIX =================
+// IMPORTANT: allow system generation even when buttons are locked
 //
 
-function triggerNextQuestAfterDelay() {
+function generate(){
 
-    // small delay ensures UI finishes updating first
-    setTimeout(() => {
-        generate();
-        setButtonsDisabled(false); // unlock AFTER new quest exists
-    }, 800);
+    const card = document.getElementById("challenge");
+    if (card) card.style.boxShadow = "none";
+
+    const category = getCategory();
+    const missionList = library[category] || [];
+
+    if (!missionList.length) return;
+
+    let mission = pick(missionList);
+
+    let key = category + mission;
+    let attempts = 0;
+
+    while(history.includes(key) && attempts < 10){
+        mission = pick(missionList);
+        key = category + mission;
+        attempts++;
+    }
+
+    history.push(key);
+
+    if(history.length > 300){
+        history.shift();
+    }
+
+    localStorage.setItem("history", JSON.stringify(history));
+
+    currentRarity = getRarity();
+
+    document.getElementById("rarityLabel").innerText = currentRarity.name.toUpperCase();
+    document.getElementById("rarityLabel").style.color = currentRarity.color;
+
+    document.getElementById("missionText").innerText = mission;
+
+    card.style.boxShadow = `0 0 20px ${currentRarity.color}`;
 }
 // ================= FULL MISSION LIBRARY =================
 
@@ -1282,8 +1313,6 @@ function getRarity() {
 
 function generate(){
 
-    if (isLocked) return;
-
     const card = document.getElementById("challenge");
     if (card) card.style.boxShadow = "none";
 
@@ -1315,6 +1344,7 @@ function generate(){
 
     const rarityEl = document.getElementById("rarityLabel");
     const missionEl = document.getElementById("missionText");
+    const cardEl = document.getElementById("challenge");
 
     if (rarityEl) {
         rarityEl.innerText = currentRarity.name.toUpperCase();
@@ -1325,8 +1355,8 @@ function generate(){
         missionEl.innerText = mission;
     }
 
-    if (card) {
-        card.style.boxShadow = `0 0 20px ${currentRarity.color}`;
+    if (cardEl) {
+        cardEl.style.boxShadow = `0 0 20px ${currentRarity.color}`;
     }
 }
 
@@ -1335,8 +1365,6 @@ function generate(){
 //
 
 function complete(){
-
-    if (isLocked) return;
 
     setButtonsDisabled(true);
 
@@ -1359,8 +1387,15 @@ function complete(){
 
     showCongrats();
 
-    // IMPORTANT FIX: always generate AFTER congrats
-    triggerNextQuestAfterDelay();
+    setTimeout(() => {
+
+        generate(); // ALWAYS generate new quest
+
+        setTimeout(() => {
+            setButtonsDisabled(false); // unlock after generation
+        }, 100);
+
+    }, 900);
 }
 
 //
@@ -1398,11 +1433,9 @@ function showCongrats() {
 function triggerNextQuestAfterDelay() {
 
     setTimeout(() => {
-
-        generate();              // new quest ALWAYS appears
-        setButtonsDisabled(false); // unlock AFTER generation
-
-    }, 900);
+        generate();
+        setButtonsDisabled(false);
+    }, 800);
 }
 
 //
