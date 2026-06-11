@@ -162,6 +162,7 @@ let xp = parseInt(localStorage.getItem("xp") || "0");
 let level = parseInt(localStorage.getItem("level") || "1");
 
 let currentRarity = null;
+let isLocked = false;
 
 //
 // ================= INIT =================
@@ -197,13 +198,25 @@ function showXPAnimation(amount) {
     setTimeout(() => popup.remove(), 1000);
 }
 
+function setButtonsDisabled(state) {
+
+    const buttons = document.querySelectorAll("button");
+
+    buttons.forEach(btn => {
+        btn.disabled = state;
+        btn.style.opacity = state ? "0.5" : "1";
+        btn.style.cursor = state ? "not-allowed" : "pointer";
+    });
+
+    isLocked = state;
+}
+
 function updateXPUI() {
 
     const levelEl = document.getElementById("level");
     const xpFill = document.getElementById("xpFill");
 
     let xpNeeded = level * 100;
-
     let percent = Math.min((xp / xpNeeded) * 100, 100);
 
     if (levelEl) levelEl.innerText = level;
@@ -233,30 +246,17 @@ function addXP(amount) {
     localStorage.setItem("level", level);
 
     updateXPUI();
-
-    // SAFE HOOK (second half may or may not exist yet)
-    if (typeof autoGenerateNextQuest === "function") {
-        autoGenerateNextQuest();
-    }
 }
 
-//
-// ================= RESET =================
-//
-
 function confirmReset() {
+
     const sure = confirm("Are you sure you want to reset all progress?");
     if (sure) resetGame();
 }
 
 function resetGame() {
 
-    localStorage.removeItem("xp");
-    localStorage.removeItem("level");
-    localStorage.removeItem("streak");
-    localStorage.removeItem("total");
-    localStorage.removeItem("history");
-    localStorage.removeItem("recentCategories");
+    localStorage.clear();
 
     xp = 0;
     level = 1;
@@ -1227,12 +1227,12 @@ const mindchallenges = [
 //
 
 const library = {
-    physicalMastery: physicalMastery || [],
-    creativeOutput: creativeOutput || [],
-    buildMissions: buildMissions || [],
-    skillAcquisition: skillAcquisition || [],
-    lifeUpgrade: lifeUpgrade || [],
-    mindchallenges: mindchallenges || []
+    physicalMastery: physicalMastery,
+    creativeOutput: creativeOutput,
+    buildMissions: buildMissions,
+    skillAcquisition: skillAcquisition,
+    lifeUpgrade: lifeUpgrade,
+    mindchallenges: mindchallenges
 };
 
 const categoryNames = Object.keys(library);
@@ -1279,6 +1279,8 @@ function getRarity() {
 //
 
 function generate(){
+
+    if (isLocked) return;
 
     const card = document.getElementById("challenge");
     if (card) card.style.boxShadow = "none";
@@ -1335,6 +1337,10 @@ function generate(){
 
 function complete(){
 
+    if (isLocked) return;
+
+    setButtonsDisabled(true);
+
     total++;
     localStorage.setItem("total", total);
 
@@ -1354,10 +1360,50 @@ function complete(){
 
     if (streakEl) streakEl.innerText = streak;
     if (totalEl) totalEl.innerText = total;
+
+    showCongrats();
+
+    setTimeout(() => {
+
+        generate();
+
+        setTimeout(() => {
+            setButtonsDisabled(false);
+        }, 300);
+
+    }, 1200);
 }
 
 //
-// ================= AUTO GENERATE =================
+// ================= CONGRATS POPUP =================
+//
+
+function showCongrats() {
+
+    const box = document.createElement("div");
+
+    box.innerText = "🎉 QUEST COMPLETED!";
+    box.style.position = "fixed";
+    box.style.top = "40%";
+    box.style.left = "50%";
+    box.style.transform = "translate(-50%, -50%)";
+    box.style.background = "#00c853";
+    box.style.padding = "20px 30px";
+    box.style.borderRadius = "12px";
+    box.style.fontSize = "22px";
+    box.style.fontWeight = "bold";
+    box.style.zIndex = "9999";
+    box.style.boxShadow = "0 0 25px rgba(0,0,0,0.4)";
+
+    document.body.appendChild(box);
+
+    setTimeout(() => {
+        box.remove();
+    }, 1200);
+}
+
+//
+// ================= AUTO GENERATE HOOK =================
 //
 
 function autoGenerateNextQuest() {
