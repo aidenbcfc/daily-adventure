@@ -163,6 +163,7 @@ let level = parseInt(localStorage.getItem("level") || "1");
 
 let currentRarity = null;
 let isLocked = false;
+let questActive = false;
 
 //
 // ================= INIT =================
@@ -256,6 +257,7 @@ function resetGame() {
     total = 0;
     history = [];
     recentCategories = [];
+    questActive = false;
 
     document.getElementById("streak").innerText = streak;
     document.getElementById("total").innerText = total;
@@ -264,8 +266,7 @@ function resetGame() {
 }
 
 //
-// ================= CRITICAL FIX =================
-// IMPORTANT: allow system generation even when buttons are locked
+// ================= CRITICAL FIX: QUEST STATE CONTROL =================
 //
 
 function generate(){
@@ -305,6 +306,69 @@ function generate(){
     document.getElementById("missionText").innerText = mission;
 
     card.style.boxShadow = `0 0 20px ${currentRarity.color}`;
+
+    // 🔥 THIS IS THE KEY FIX
+    questActive = true;
+}
+
+function complete(){
+
+    if (!questActive) return;
+
+    setButtonsDisabled(true);
+
+    total++;
+    localStorage.setItem("total", total);
+
+    addXP(currentRarity ? currentRarity.xp : 10);
+
+    let last = localStorage.getItem("last");
+    let today = new Date().toDateString();
+
+    if(last !== today){
+        streak++;
+        localStorage.setItem("streak", streak);
+        localStorage.setItem("last", today);
+    }
+
+    document.getElementById("streak").innerText = streak;
+    document.getElementById("total").innerText = total;
+
+    showCongrats();
+
+    setTimeout(() => {
+
+        generate();
+
+        setTimeout(() => {
+            setButtonsDisabled(false);
+        }, 100);
+
+    }, 900);
+}
+
+function showCongrats() {
+
+    const box = document.createElement("div");
+
+    box.innerText = "🎉 QUEST COMPLETED!";
+    box.style.position = "fixed";
+    box.style.top = "40%";
+    box.style.left = "50%";
+    box.style.transform = "translate(-50%, -50%)";
+    box.style.background = "#00c853";
+    box.style.padding = "20px 30px";
+    box.style.borderRadius = "12px";
+    box.style.fontSize = "22px";
+    box.style.fontWeight = "bold";
+    box.style.zIndex = "9999";
+    box.style.boxShadow = "0 0 25px rgba(0,0,0,0.4)";
+
+    document.body.appendChild(box);
+
+    setTimeout(() => {
+        box.remove();
+    }, 1000);
 }
 // ================= FULL MISSION LIBRARY =================
 
@@ -1342,22 +1406,17 @@ function generate(){
 
     currentRarity = getRarity();
 
-    const rarityEl = document.getElementById("rarityLabel");
-    const missionEl = document.getElementById("missionText");
-    const cardEl = document.getElementById("challenge");
+    document.getElementById("rarityLabel").innerText = currentRarity.name.toUpperCase();
+    document.getElementById("rarityLabel").style.color = currentRarity.color;
 
-    if (rarityEl) {
-        rarityEl.innerText = currentRarity.name.toUpperCase();
-        rarityEl.style.color = currentRarity.color;
+    document.getElementById("missionText").innerText = mission;
+
+    if (card) {
+        card.style.boxShadow = `0 0 20px ${currentRarity.color}`;
     }
 
-    if (missionEl) {
-        missionEl.innerText = mission;
-    }
-
-    if (cardEl) {
-        cardEl.style.boxShadow = `0 0 20px ${currentRarity.color}`;
-    }
+    // 🔥 ACTIVATE QUEST
+    questActive = true;
 }
 
 //
@@ -1365,6 +1424,9 @@ function generate(){
 //
 
 function complete(){
+
+    // 🚫 BLOCK IF NO QUEST
+    if (!questActive) return;
 
     setButtonsDisabled(true);
 
@@ -1387,12 +1449,13 @@ function complete(){
 
     showCongrats();
 
+    // 🔥 FLOW CONTROL: COMPLETE → NEW QUEST → UNLOCK
     setTimeout(() => {
 
-        generate(); // ALWAYS generate new quest
+        generate();
 
         setTimeout(() => {
-            setButtonsDisabled(false); // unlock after generation
+            setButtonsDisabled(false);
         }, 100);
 
     }, 900);
@@ -1427,19 +1490,7 @@ function showCongrats() {
 }
 
 //
-// ================= AUTO FLOW CONTROL =================
-//
-
-function triggerNextQuestAfterDelay() {
-
-    setTimeout(() => {
-        generate();
-        setButtonsDisabled(false);
-    }, 800);
-}
-
-//
-// ================= END OF FILE =================
+// ================= END =================
 //
 
 </script>
